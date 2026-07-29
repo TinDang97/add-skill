@@ -10,6 +10,11 @@
 
 ## 2026-07-29
 
+- human:tindang · milestones/engine-core · amended A3 — restored --locate/--graph/--since into e6; invariant restated as consumed + remaining ≤ 2400
+- human:tindang · tasks/build-init-profiles · gate PASS — init's output accepted by the M0 oracle at 0 errors, unedited
+- process:pytest · tasks/build-init-profiles · receipt 2 — 8/8 pass, kind test-ids, freshness content, red_first proven
+- process:pytest · tasks/build-init-profiles · receipt 1 — 8/8 fail on absent `init`, the red-first record
+- claude/opus-5 · tasks/build-init-profiles · opened — wave 2, budget 213 lines wc -l
 - human:tindang · milestones/engine-core · amended A2 — A1's falsifier was a ratio between two estimates; restated as one measurable
 - human:tindang · tasks/compile-graph · gate PASS — engine and validator independently agree: 81 edges over 27 nodes
 - process:pytest · tasks/compile-graph · receipt 2 — 16/16 pass, kind test-ids, freshness content, red_first proven

@@ -27,13 +27,14 @@ ratified: []
 amended:
   - { by: "human:tindang", at: 2026-07-29, authority: human, reason: "A1 line-budget rebase — the twelve per-task allocations were written in code lines while the 2,400 ceiling is wc -l. Re-derived in the ceiling's unit; 660 code lines of surface pre-booked as cuts. See ## AMENDMENTS" }
   - { by: "human:tindang", at: 2026-07-29, authority: human, reason: "A2 — A1's falsifier was a ratio between two estimates, so it fired at e2 while its conclusion was false. Restated as one measurable: cumulative consumed vs cumulative allocated, checked at every gate. A1 left unedited per §3.6" }
+  - { by: "human:tindang", at: 2026-07-29, authority: human, reason: "A3 — restored --locate, --graph and status --since (~247 lines) into e6 after three consecutive under-runs left +301 margin; restated the invariant as consumed + remaining allocations <= 2400, because A2's was one-directional and generated no signal while winning" }
 verified: []
 ---
 ## CARD
 goal: ten verbs, ≤2,400 lines, stdlib only, shipped inside the skill — and dogfooded here
 shape: five waves; each wave's line budget is asserted in CI so overflow shows at wave one
-state: wave 1 CLOSED — e1 and e2 gated PASS (31 checks) · engine 430/2400 · +162 lines ahead of plan
-next: wave 2 — e3 `init+profiles` ∥ e4 `node verbs` ∥ e6 `status`, budgets 213 · 320 · 160
+state: wave 2 — e3 gated PASS (39 checks total) · engine 504/2400 · projected 2338/2400, slack 62
+next: e4 `node verbs` (320) ∥ e6 `status` (407 after A3 restored the UX flags)
 
 ## SCOPE
 In:  `add/scripts/add.py` (the engine) · its templates, profiles and method personas ·
@@ -66,7 +67,7 @@ risks:
 - [ ] ten verbs green, each built red-first, each ending in a `next:` line   (← every e-task)
 - [ ] engine ≤ 2,400 lines **`wc -l`**, asserted in CI from wave one          (← build-durability)
 - [ ] every per-task line budget is asserted in the SAME unit as the ceiling  (← amendment A1)
-- [ ] cumulative consumed ≤ cumulative allocated at every gate                (← amendment A2)
+- [ ] consumed + Σ(remaining allocations) ≤ 2,400 at every gate               (← amendment A3)
 - [ ] `.add/` in this repo is driven by the engine, not by hand              (← package-in-skill)
 - [ ] `python3 add/scripts/add.py` runs from a clean checkout with zero install (← package-in-skill)
 - [ ] every FORMAT rule the validator enforces still holds after the engine writes (← build-doctor)
@@ -142,18 +143,50 @@ A1 is left **unedited** (§3.6 — amendments are recorded, never rewritten). It
 Density is demoted to an observation. It is a ratio between two estimates and can never be a
 trigger — that is the defect A2 exists to remove.
 
+### A3 · 2026-07-29 · restore the UX cuts; fix the invariant that kept them dead (human:tindang)
+**Three under-runs in a row.** e1 245/245 · e2 185/347 · e3 74/213 — cumulative **504 consumed
+against 805 allocated, +301**. A1 pre-booked 660 code lines of cuts to survive a units error that
+turned out not to bind. Three of those cuts were user-facing, and they are precisely the surface
+that answers 2.5's weakness #5, *user experience on gates and following AI work*.
+
+**Restored** (~247 lines at the observed 0.65 density), folded into `e6`:
+
+| restored | code | why it should not have died |
+|---|---:|---|
+| `--locate` | 50 | jump to a node by slug — goal 11, "slugs easy to look up" |
+| `--graph` | 70 | render the milestone DAG — the only view of what the AI is doing |
+| `status --since` | 40 | what changed since a point in time — R8, following AI work |
+
+`e6 build-orient`'s budget: **160 → 407**.
+
+**The invariant A2 stated was one-directional and therefore useless here.** "Consumed > allocated"
+fires only when losing; three consecutive wins produced no signal at all, so the cuts stayed dead
+by default rather than by decision. It is also gameable in the wrong direction — inflating an
+allocation makes the trigger recede. Restated:
+
+> **consumed + Σ(remaining allocations) ≤ 2,400**, checked at every gate.
+> One number, symmetric, and it is the ceiling itself rather than a proxy for it. Slack that
+> appears when a task lands under budget is *visible and spendable*, not silently banked.
+
+| | value |
+|---|---:|
+| consumed (e1–e3) | 504 |
+| remaining allocations (9 tasks, e6 now 407) | 1,834 |
+| **projected total** | **2,338 / 2,400 — slack 62** |
+
+D-6 untouched: the ceiling still has not moved. What moved is which side of it we can see.
+
 ## STRATEGY
 approach: dependency-first — nothing can be built before the thing that reads and writes a
   node, and nothing can be reasoned about before the graph compiles
 freeze-first: `port-okf-parse` publishes the node I/O contract every other verb calls; it
   freezes before any verb is written
-waves: (1) e1 parse ∥ — · (2) e2 graph · (3) e3 init ∥ e4 node-verbs ∥ e6 status ·
-  (4) e5 brief ∥ e7 receipts → e12 evidence · (5) e8 doctor · (6) e9 hints ∥ e10 durability
-  ∥ e11 packaging. Waves 3 and 4 are worktree-parallel — the first real use of L-E
-tradeoffs: considered porting 2.5's `okf.py` (206 lines, proven) wholesale — rejected: it
-  is coupled to `state.json` as truth, which is the exact thing L1 removes. Port its shape.
-  Considered a third-party YAML parser — rejected: stdlib-only is a shipping constraint, and
-  a full parser would round-trip away the comments this bundle depends on.
+waves: (1) e1 parse → e2 graph · (2) e3 init ∥ e4 node-verbs ∥ e6 status · (3) e5 brief ∥
+  e7 receipts → e12 evidence · (4) e8 doctor · (5) e9 hints ∥ e10 durability ∥ e11 packaging.
+  Waves 2 and 3 are worktree-parallel — the first real use of L-E
+  <!-- Renumbered 2026-07-29: this line first read six waves (e1 and e2 separately) while
+       amendment A1's table read five. Two numbering schemes for one plan is a defect, not a
+       viewpoint. A1's numbering wins because it is the one CI asserts the line budget against. -->
 
 ## CLOSE
 evidence: <one row per task — <t-slug>: gate=<outcome> · checks=<n green> · residue=<none|note>>
