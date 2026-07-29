@@ -4,32 +4,17 @@
      Do not append here; a line with no stamp behind it cannot exist (define-log-rotation M1).
      Newest first, grouped under ISO date headings (OKF §9, A10). Humans write in `## Notes` only. -->
 
-<!-- ROTATED (A4): the `## 2026-07-29` group folded into
-     milestones/format-standard.md#close at the M0 close. Nothing was deleted — a rendered
-     journal is truncated by changing what it renders, not by editing it. -->
-
-## Notes` only. -->
+<!-- ROTATED (A4): M0's entries folded into milestones/format-standard.md#close at the M0 close
+     and are no longer rendered here. Nothing was deleted — a rendered journal is truncated by
+     changing what it renders, not by editing it. What follows is M1 only. -->
 
 ## 2026-07-29
 
-- process:pytest · tasks/build-worked-example · receipt 3 — 18/18 pass, kind test-ids, freshness content, red_first proven
-- claude/opus-5 · FORMAT.md · landed A22–A24 as v1.3-draft; the mtime assumption was tested and replaced
-- human:tindang · FORMAT.md · ratified — proactive layer shipped with a falsifier (E12); Stage 1 approved
-- claude/opus-5 · PROPOSAL.md · v4 §11–§13 — seven proactive findings, two settled by kill-test; the plan
-- process:pytest · tasks/build-worked-example · receipt 2 — 14/14 pass, ids parsed, red_first proven
-- process:pytest · tasks/build-worked-example · receipt 1 — 13/13 fail (validator absent), the red-first record
-- claude/opus-5 · scripts/validate_bundle.py · built — bundle scan: 20 nodes · 50 edges · 0 error · CONFORMS
-- human:tindang · FORMAT.md · ratified — A19–A21 adopted (D-7 identity, D-8 compiled log, D-9 trigger gate, D-10 eval budget)
-- claude/opus-5 · FORMAT.md · landed A19–A21 as v1.2-draft; ATG citations repaired; law 5 added
-- claude/opus-5 · PROPOSAL.md · v4 ratified — folds v3, adds the ATG audit, compiled log, trigger eval, identity contract
-- claude/opus-5 · tasks/align-standards-citations · renamed from align-okf-conformance — the audit now covers every profiled source
-- human:tindang · FORMAT.md · ratified — A9–A18 adopted; engine budget raised 2,000 → 2,400 once (D-6)
-- claude/opus-5 · FORMAT.md · landed A1–A18 as v1.1-draft; OKF defects D1–D5 repaired; `scope:` promoted to frontmatter
-- claude/opus-5 · tasks/define-evidence-binding · opened — `covers:` was a label, not a binding (A15/A16)
-- claude/opus-5 · tasks/define-compat-contract · opened — A13 additive-only + A14 trust boundary
-- claude/opus-5 · tasks/define-scale-rules · opened — A12 orientation bounds
-- claude/opus-5 · PROPOSAL.md · v2 ratified — 8 amendments raised against FORMAT v1.0-draft
-- human:tindang · milestones/format-standard · opened — M0 seeded by hand; the bundle IS the worked example
+- human:tindang · milestones/engine-core · amended A1 — line budget rebased into `wc -l`; 660 code lines of surface pre-booked as cuts; reserve 8 lines
+- human:tindang · tasks/port-okf-parse · gate PASS — 23 live nodes round-trip byte-identically
+- process:pytest · tasks/port-okf-parse · receipt 2 — 15/15 pass, kind test-ids, freshness content, red_first proven
+- process:pytest · tasks/port-okf-parse · receipt 1 — collection failed, module absent: the red-first record
+- claude/opus-5 · milestones/engine-core · opened — M1 seeded: 12 tasks, 5 waves, per-task line budgets
 
 ## Notes
 

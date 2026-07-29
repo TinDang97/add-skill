@@ -7,7 +7,10 @@ engine: add/3.0.0
 created: 2026-07-29
 sensitive_paths:                 # A17 — a task whose scope matches pins the floor to human
   - FORMAT.md                    #   the format every consumer compiles against
-  - scripts/**                   #   the engine itself
+  - scripts/**                   #   the conformance validator (M0's oracle)
+  - add/scripts/**               #   the engine itself. Added when e1 created its home: a
+                                 #   pattern that stops matching when a file moves protects
+                                 #   nothing, and does it silently.
 persona_corpus: ../AIDD-Book/personas-teacher   # D-4 — referenced, never vendored
 generated: { by: claude/opus-5, at: 2026-07-29 }
 ---
@@ -28,10 +31,12 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 
 ## Milestones
 
+- [Engine core](milestones/engine-core.md) — `active` — ten verbs, ≤2,400 lines, dogfooded here
 - [Format standard](milestones/format-standard.md) — `done` — ABF-1 + A1–A24, proven by a bundle that validates
 
 ## Tasks
 
+- [Port OKF node I/O — read tiers and surgical writes](tasks/port-okf-parse.md) — `done` · `standard` · `architecture`
 - [Define the entity model and slug rules](tasks/define-entity-model.md) — `done` · `standard`
 - [Define the task node schema](tasks/define-task-schema.md) — `done` · `standard`
 - [Define authority and evidence rules](tasks/define-authority-rules.md) — `done` · `standard` · `security`

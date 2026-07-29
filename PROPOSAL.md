@@ -682,8 +682,11 @@ behaviour or a flag, which is methodology rule 8 holding under pressure.
 - **`v0` fails three times** → the skill cannot carry the loop unwrapped. The correct response
   is to **narrow the product** to *format + engine + a human-driven method*, not to add tasks.
   That deletes M4's remaining evals and changes M5's claim.
-- **The engine passes 2,400 lines before `e8`** → drop a verb, never a law. First cuts:
-  `--locate`, then `--graph`. The budget moved once (D-6) and does not move again.
+- **The engine passes 2,400 lines `wc -l` before `e8`** → drop a verb, never a law. `--locate`,
+  `--graph` and `status --since` are already spent by amendment A1, so the next cut is a verb.
+  The budget moved once (D-6) and does not move again. **Fired at `e1`, as P7 intended.**
+- **Wave 2 lands at 0.65 code/total instead of 0.75** → A1's rebase is 322 lines short and a verb
+  must go. This is the live falsifier; `e2` decides it.
 - **A profile needs a sixth spec lens** → the closed-lens claim (goal 2) is wrong and M0
   reopens. Watch this at `e3`.
 - **`ids: unknown` becomes the common case** in real runners → evidence binding degrades to a
@@ -914,16 +917,29 @@ project's own claim — *a gate is earned by a receipt* — is true of the proje
 ### 13c · Stage 2 — M1 engine core (3–4 sessions, red/green throughout)
 
 Built in dependency order, with a **line budget per task** (P7) so overflow is visible at task
-two rather than task nine. Budget: 2,400 total, ~15% held in reserve.
+two rather than task nine. **Budget: 2,400 lines `wc -l`** — the unit of the 8,948-line 2.5 anchor
+(`add.py` 6,600 + `add_engine/` 2,348). Naming the unit is not pedantry; see the correction below.
 
-| wave | tasks | line budget | why this order |
+| wave | tasks | line budget (`wc -l`) | why this order |
 |---|---|---:|---|
-| 1 | `e1` parse+atomic-write · `e2` graph+fragment resolver | 180 · 260 | everything else reads through these; `validate_bundle.py` was written to be this port |
-| 2 | `e3` init+profiles · `e4` node verbs · `e6` status | 240 · 300 · 280 | the first end-to-end lane (`init` → `new` → `status`) becomes usable, and dogfooding starts here |
-| 3 | `e5` brief compiler · `e7` receipts+learn | 260 · 220 | `e5` unblocks M3's prompts and M2's runtime reference |
-| 4 | `e12` evidence binding · `e8` doctor | 200 · 300 | the two that carry the central claim and the compiled artifacts |
-| 5 | `e9` hints · `e10` durability · `e11` package-in-skill | 60 · 90 · 60 | the affordance layer lands last, over a complete verb set |
-| | **total** | **2,450 budgeted → trim to ≤2,400 at wave 5** | the overflow rule cuts `--locate`, then `--graph`, never a law |
+| 1 | `e1` parse+atomic-write · `e2` graph+fragment resolver | **245 spent** · 347 | everything else reads through these; `validate_bundle.py` was written to be this port |
+| 2 | `e3` init+profiles · `e4` node verbs · `e6` status | 213 · 320 · 160 | the first end-to-end lane (`init` → `new` → `status`) becomes usable, and dogfooding starts here |
+| 3 | `e5` brief compiler · `e7` receipts+learn | 267 · 240 | `e5` unblocks M3's prompts and M2's runtime reference |
+| 4 | `e12` evidence binding · `e8` doctor | 160 · 200 | the two that carry the central claim and the compiled artifacts |
+| 5 | `e9` hints · `e10` durability · `e11` package-in-skill | 80 · 80 · 80 | the affordance layer lands last, over a complete verb set |
+| | **total** | **2,392 / 2,400 — reserve 8 lines** | 660 code lines of surface pre-booked as cuts, milestone amendment A1 |
+
+> **Corrected 2026-07-29 by e1's evidence.** This table previously read `180 · 260 · 240 · 300 · 280
+> · 260 · 220 · 200 · 300 · 60 · 90 · 60`, summing to **2,450 against a 2,400 ceiling**, one
+> paragraph below the claim that ~15% was "held in reserve." Both sentences were hand-written and
+> neither was computed — the third instance of **L7**. Worse, the allocations were denominated in
+> *code lines* while the ceiling is `wc -l`: e1 landed at 159 code (88% of its 180) and 245 total
+> (136%). The estimates were fine; the units were not. Across twelve tasks that mismatch was worth
+> **1,337 lines**. The rebase above re-derives every budget in the ceiling's own unit, pre-books
+> 660 code lines of cuts (`--locate`, `--graph`, `status --since`, `doctor` reusing the validator,
+> and six others), and budgets verb modules at 0.75 code/total against e1's 0.65. **D-6 held: the
+> ceiling did not move.** ⚠ if wave 2 lands at 0.65 density the plan is 322 over and a verb must go
+> — a D-2 change, decided on `e2`'s evidence, not now.
 
 Two rules bind every wave: **red/green on each verb**, and **`v5`'s CI asserts the running line
 total from wave 1** — a budget nobody counts is a wish.
