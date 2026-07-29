@@ -2,7 +2,7 @@
 type: Task
 title: Bind a gate to the checks its receipt actually observed
 goal: a gate cannot pass on a check that was never written, and red-first stops being a self-report
-status: verify
+status: done
 depth: deep
 kind: security
 sensitivity: security
@@ -26,13 +26,18 @@ gives:
 scope:
   - FORMAT.md
 generated: { by: claude/opus-5, at: 2026-07-29 }
-verified: []
+verified:
+  - { by: "human:tindang", at: 2026-07-29, act: freeze, authority: human }
+  - { by: "human:tindang", at: 2026-07-29, act: gate, authority: human, outcome: PASS,
+      receipt: /tasks/build-worked-example.d/runs/3.md }
+    # A17 pinned this to `human`: `scope:` includes FORMAT.md, a sensitive_path. The
+    # declared `sensitivity:` was never the binding constraint.
 ---
 ## CARD
 goal: close the forgeable link in our own trust chain
 gives: A15 evidence binding · A16 brief determinism and hash
 scope: FORMAT.md §6.1 · §7.3 · §8.3
-beat: verify · next: human gate required (sensitivity: security) after the validator receipt
+beat: done · gate PASS by human:tindang on receipt 3
 
 ## RULES
 <must>
@@ -88,9 +93,9 @@ least-sure: contract — the degradation. `covers_unverified` as `info` is the p
 red-first: every check above MUST fail for the right reason before BUILD.
 
 ## EVIDENCE
-receipt: <tasks/define-evidence-binding.d/runs/1.md — pending the M0 validator>
-gate: <pending — sensitivity: security pins the floor to human authority, unstrikeably>
-scope-check: <pending>
+receipt: /tasks/build-worked-example.d/runs/3.md — 18/18, the shared M0 evidence run
+gate: PASS — human:tindang, 2026-07-29, authority `human` (A17 floor)
+scope-check: FORMAT.md only — inside the declared scope
 
 ## LESSONS
 - Our own trust chain had a forgeable link: `covers:` named a check, the receipt reported a pass count, and nothing tied the two. Evidence is only evidence when the specific claim binds to the specific observation -> add learn quality

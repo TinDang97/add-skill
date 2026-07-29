@@ -2,7 +2,7 @@
 type: Task
 title: Build the worked example and validator
 goal: this repo's own bundle conforms to ABF-1 and a validator proves it by exiting 0
-status: verify
+status: done
 depth: standard
 kind: test
 sensitivity: mechanical
@@ -28,13 +28,18 @@ scope:
   - tests/test_validate_bundle.py
   - .add/**
 generated: { by: claude/opus-5, at: 2026-07-29 }
-verified: []
+verified:
+  - { by: "human:tindang", at: 2026-07-29, act: freeze, authority: human }
+  - { by: "human:tindang", at: 2026-07-29, act: gate, authority: human, outcome: PASS,
+      receipt: /tasks/build-worked-example.d/runs/3.md }
+    # no `brief:` hash — A16 stamps the brief that drove the work, and no engine exists
+    # to compile one yet. Recorded as absent rather than omitted.
 ---
 ## CARD
 goal: prove ABF-1 by building a bundle that obeys it, checked by a script
 gives: the validator script + this bundle as the reference example
 scope: scripts/validate_bundle.py · .add/**
-beat: verify · next: human gate required — scope matches sensitive_paths (scripts/**), A17 pins the floor
+beat: done · gate PASS by human:tindang on receipt 3 — A17's human floor satisfied
 
 ## RULES
 <must>
@@ -90,10 +95,10 @@ receipt: /tasks/build-worked-example.d/runs/3.md — 18/18 pass, kind: test-ids,
          red_first: proven, freshness: content (A22 digest over the scope set)
          (prior reds: runs/1.md — 13/13 fail, validator absent · runs/2.md — 14/14, the A23
           checks then failed red against a `compiled_undeclared` finding that did not exist)
-bundle scan: `python3 scripts/validate_bundle.py .add` → 20 nodes · 50 edges · 0 info · 0 error · CONFORMS · exit 0
-gate: PENDING HUMAN — `scope:` includes `scripts/**`, which matches `index.md`'s
-      `sensitive_paths:`, so A17 pins the floor to `human` regardless of
-      `sensitivity: mechanical`. The engine's own rule refuses to let this task self-gate.
+bundle scan: `python3 scripts/validate_bundle.py .add` → 21 nodes · 51 edges · 0 info · 0 error · CONFORMS · exit 0
+gate: PASS — human:tindang, 2026-07-29, authority `human`. `scope:` includes `scripts/**`,
+      which matches `index.md`'s `sensitive_paths:`, so A17 pinned the floor to `human`
+      regardless of `sensitivity: mechanical`. The rule held: the task could not self-gate.
 scope-check: touched `scripts/validate_bundle.py` and `tests/test_validate_bundle.py`.
       `tests/**` was NOT in the declared `scope:` — a real deviation, declared rather than
       quietly absorbed. `scope:` has been corrected to include it; the receipt post-dates

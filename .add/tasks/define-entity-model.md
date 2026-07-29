@@ -2,7 +2,7 @@
 type: Task
 title: Define the entity model and slug rules
 goal: the type vocabulary, bundle layout, and slug rules are closed and unambiguous
-status: verify
+status: done
 depth: standard
 kind: docs
 sensitivity: architecture
@@ -16,13 +16,18 @@ gives:
 scope:
   - FORMAT.md
 generated: { by: claude/opus-5, at: 2026-07-29 }
-verified: []
+verified:
+  - { by: "human:tindang", at: 2026-07-29, act: freeze, authority: human }
+  - { by: "human:tindang", at: 2026-07-29, act: gate, authority: human, outcome: PASS,
+      receipt: /tasks/build-worked-example.d/runs/3.md }
+    # A17 pinned this to `human`: `scope:` includes FORMAT.md, a sensitive_path. The
+    # declared `sensitivity:` was never the binding constraint.
 ---
 ## CARD
 goal: closed vocabulary, flat layout, mechanical slug lookup
 gives: the type set, the bundle layout, the slug rule
 scope: FORMAT.md §1–§2
-beat: verify · next: blocked on the validator (build-worked-example) for its receipt
+beat: done · gate PASS by human:tindang on receipt 3
 
 ## RULES
 <must>
@@ -59,9 +64,9 @@ least-sure: rules — whether `Run` deserves to be a type or a receipt sub-shape
 red-first: every check above MUST fail for the right reason before BUILD.
 
 ## EVIDENCE
-receipt: <tasks/define-entity-model.d/runs/1.md — pending the M0 validator>
-gate: <pending>
-scope-check: <pending>
+receipt: /tasks/build-worked-example.d/runs/3.md — 18/18, the shared M0 evidence run
+gate: PASS — human:tindang, 2026-07-29, authority `human` (A17 floor)
+scope-check: FORMAT.md only — inside the declared scope
 
 ## LESSONS
 - A hand-maintained SEAMS.md is a compiled view in disguise; cross-milestone `gives:`/`needs:` edges already carry it -> add learn domain

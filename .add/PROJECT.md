@@ -12,8 +12,8 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 ## CARD
 goal: lean, trustworthy AI-driven development — ADD 3.0 on the ABF-1 file graph
 shape: FORMAT (M0) → engine (M1) → skill ∥ personas (M2/M3) → proof (M4) → ship (M5)
-state: M0 active (10/10 rules written, validator green, nothing gated) · M1–M5 queued
-next: human gate on build-worked-example — A17 pins it, and it is M0's only evidence path
+state: M0 done (10/10 gated at `human` on one receipt) · M1 next · M2–M5 queued
+next: M1 `e1 port-okf-parse` — lift the frontmatter parser out of validate_bundle.py
 
 ## Direction
 Distil AIDD-Book 2.5 — which scored a best-in-class 0.97 fidelity floor across six

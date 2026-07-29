@@ -2,7 +2,7 @@
 type: Task
 title: Define the journal, its rotation, and the conformance codes
 goal: the journal is compiled from stamps, cannot grow into a context hazard, and conformance never rejects a bundle for style
-status: verify
+status: done
 depth: standard
 kind: docs
 sensitivity: mechanical
@@ -19,13 +19,18 @@ gives:
 scope:
   - FORMAT.md
 generated: { by: claude/opus-5, at: 2026-07-29 }
-verified: []
+verified:
+  - { by: "human:tindang", at: 2026-07-29, act: freeze, authority: human }
+  - { by: "human:tindang", at: 2026-07-29, act: gate, authority: human, outcome: PASS,
+      receipt: /tasks/build-worked-example.d/runs/3.md }
+    # A17 pinned this to `human`: `scope:` includes FORMAT.md, a sensitive_path. The
+    # declared `sensitivity:` was never the binding constraint.
 ---
 ## CARD
 goal: A4 + A20 — a journal nobody writes by hand, plus the conformance severity table
 gives: the compile rule, the rotation rule, the three error codes
 scope: FORMAT.md law 5 · §1 (log.md) · §4.1 · §9
-beat: verify · next: blocked on the validator (build-worked-example) for its receipt
+beat: done · gate PASS by human:tindang on receipt 3
 
 ## RULES
 <must>
@@ -75,9 +80,9 @@ least-sure: contract — whether `## Notes` should sit at the top (read first) o
 red-first: every check above MUST fail for the right reason before BUILD.
 
 ## EVIDENCE
-receipt: <tasks/define-log-rotation.d/runs/1.md — pending the M0 validator>
-gate: <pending>
-scope-check: <pending>
+receipt: /tasks/build-worked-example.d/runs/3.md — 18/18, the shared M0 evidence run
+gate: PASS — human:tindang, 2026-07-29, authority `human` (A17 floor)
+scope-check: FORMAT.md only — inside the declared scope
 
 ## LESSONS
 - The journal was the last file in the bundle that two agents could write at once, and it was also the only

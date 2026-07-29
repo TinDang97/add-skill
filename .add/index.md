@@ -28,17 +28,17 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 
 ## Milestones
 
-- [Format standard](milestones/format-standard.md) — `active` — ABF-1 + A1–A21, proven by a bundle that validates
+- [Format standard](milestones/format-standard.md) — `done` — ABF-1 + A1–A24, proven by a bundle that validates
 
 ## Tasks
 
-- [Define the entity model and slug rules](tasks/define-entity-model.md) — `verify` · `standard`
-- [Define the task node schema](tasks/define-task-schema.md) — `verify` · `standard`
-- [Define authority and evidence rules](tasks/define-authority-rules.md) — `verify` · `standard` · `security`
-- [Define the read protocol and brief grammar](tasks/define-read-protocol.md) — `verify` · `standard`
-- [Define the journal, its rotation, and the conformance codes](tasks/define-log-rotation.md) — `verify` · `standard`
-- [Align ABF-1 with the OKF and ATG source texts](tasks/align-standards-citations.md) — `verify` · `standard`
-- [Define scale rules for a long-running bundle](tasks/define-scale-rules.md) — `verify` · `quick`
-- [Define the evolution contract, the amendment protocol, and the trust boundary](tasks/define-compat-contract.md) — `verify` · `standard`
-- [Bind a gate to the checks its receipt actually observed](tasks/define-evidence-binding.md) — `verify` · `deep` · `security`
-- [Build the worked example and validator](tasks/build-worked-example.md) — `verify` · `standard` · gate pending human
+- [Define the entity model and slug rules](tasks/define-entity-model.md) — `done` · `standard`
+- [Define the task node schema](tasks/define-task-schema.md) — `done` · `standard`
+- [Define authority and evidence rules](tasks/define-authority-rules.md) — `done` · `standard` · `security`
+- [Define the read protocol and brief grammar](tasks/define-read-protocol.md) — `done` · `standard`
+- [Define the journal, its rotation, and the conformance codes](tasks/define-log-rotation.md) — `done` · `standard`
+- [Align ABF-1 with the OKF and ATG source texts](tasks/align-standards-citations.md) — `done` · `standard`
+- [Define scale rules for a long-running bundle](tasks/define-scale-rules.md) — `done` · `quick`
+- [Define the evolution contract, the amendment protocol, and the trust boundary](tasks/define-compat-contract.md) — `done` · `standard`
+- [Bind a gate to the checks its receipt actually observed](tasks/define-evidence-binding.md) — `done` · `deep` · `security`
+- [Build the worked example and validator](tasks/build-worked-example.md) — `done` · `standard` · gate PASS

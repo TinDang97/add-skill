@@ -2,7 +2,7 @@
 type: Task
 title: Define the task node schema
 goal: a task node's external interface is machine-readable and its repair rule is mechanical
-status: verify
+status: done
 depth: standard
 kind: docs
 sensitivity: architecture
@@ -18,13 +18,18 @@ scope:
   - FORMAT.md
   - templates/task.md.tmpl
 generated: { by: claude/opus-5, at: 2026-07-29 }
-verified: []
+verified:
+  - { by: "human:tindang", at: 2026-07-29, act: freeze, authority: human }
+  - { by: "human:tindang", at: 2026-07-29, act: gate, authority: human, outcome: PASS,
+      receipt: /tasks/build-worked-example.d/runs/3.md }
+    # A17 pinned this to `human`: `scope:` includes FORMAT.md, a sensitive_path. The
+    # declared `sensitivity:` was never the binding constraint.
 ---
 ## CARD
 goal: the task node shape every other M0 task cites
 gives: Task frontmatter keys + the six body sections, depth-conditioned
 scope: FORMAT.md §3 · templates/task.md.tmpl
-beat: verify · next: blocked on the validator (build-worked-example) for its receipt
+beat: done · gate PASS by human:tindang on receipt 3
 
 ## RULES
 <must>
@@ -62,9 +67,9 @@ least-sure: contract — the `gives:` value shape for non-API work
 red-first: every check above MUST fail for the right reason before BUILD.
 
 ## EVIDENCE
-receipt: <tasks/define-task-schema.d/runs/1.md — pending the M0 validator>
-gate: <pending>
-scope-check: <pending>
+receipt: /tasks/build-worked-example.d/runs/3.md — 18/18, the shared M0 evidence run
+gate: PASS — human:tindang, 2026-07-29, authority `human` (A17 floor)
+scope-check: FORMAT.md only — inside the declared scope
 
 ## LESSONS
 - 2.5's frozen §3 was prose a human read; making it frontmatter is what lets `doctor` compute staleness -> add learn domain

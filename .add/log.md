@@ -2,8 +2,13 @@
 
 <!-- COMPILED BODY (A20) — rendered from node `verified[]` stamps and `generated.at`.
      Do not append here; a line with no stamp behind it cannot exist (define-log-rotation M1).
-     Newest first, grouped under ISO date headings (OKF §9, A10). Rotates by whole date
-     groups into a milestone's CLOSE at close (A4). Humans write in `## Notes` only. -->
+     Newest first, grouped under ISO date headings (OKF §9, A10). Humans write in `## Notes` only. -->
+
+<!-- ROTATED (A4): the `## 2026-07-29` group folded into
+     milestones/format-standard.md#close at the M0 close. Nothing was deleted — a rendered
+     journal is truncated by changing what it renders, not by editing it. -->
+
+## Notes` only. -->
 
 ## 2026-07-29
 

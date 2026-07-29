@@ -2,7 +2,7 @@
 type: Task
 title: Define the evolution contract, the amendment protocol, and the trust boundary
 goal: the format and a milestone can both change without breaking a live bundle, and a brief cannot be used as an injection path
-status: verify
+status: done
 depth: standard
 kind: docs
 sensitivity: architecture
@@ -23,13 +23,18 @@ gives:
 scope:
   - FORMAT.md
 generated: { by: claude/opus-5, at: 2026-07-29 }
-verified: []
+verified:
+  - { by: "human:tindang", at: 2026-07-29, act: freeze, authority: human }
+  - { by: "human:tindang", at: 2026-07-29, act: gate, authority: human, outcome: PASS,
+      receipt: /tasks/build-worked-example.d/runs/3.md }
+    # A17 pinned this to `human`: `scope:` includes FORMAT.md, a sensitive_path. The
+    # declared `sensitivity:` was never the binding constraint.
 ---
 ## CARD
 goal: durable under evolution — of the format AND of the human's mind — and safe under composition
 gives: A13 the compatibility contract · A14 the injection trust boundary · A21 the amendment protocol
 scope: FORMAT.md §3.6 · §7.5 · §10 · law 4
-beat: verify · next: blocked on the validator for its receipt
+beat: done · gate PASS by human:tindang on receipt 3
 
 ## RULES
 <must>
@@ -86,9 +91,9 @@ least-sure: rules — whether `sensitive_paths:` and `persona_corpus:` should ha
 red-first: every check above MUST fail for the right reason before BUILD.
 
 ## EVIDENCE
-receipt: <tasks/define-compat-contract.d/runs/1.md — pending the M0 validator>
-gate: <pending>
-scope-check: <pending>
+receipt: /tasks/build-worked-example.d/runs/3.md — 18/18, the shared M0 evidence run
+gate: PASS — human:tindang, 2026-07-29, authority `human` (A17 floor)
+scope-check: FORMAT.md only — inside the declared scope
 
 ## LESSONS
 - The notary law paid a second dividend nobody designed it for: tolerating unknown keys makes forward compatibility free, so the contract only has to promise the backward direction -> add learn system

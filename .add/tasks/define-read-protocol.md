@@ -2,7 +2,7 @@
 type: Task
 title: Define the read protocol and brief grammar
 goal: every read declares a tier and every brief declares a budget it cannot silently exceed
-status: verify
+status: done
 depth: standard
 kind: docs
 sensitivity: architecture
@@ -19,13 +19,18 @@ scope:
   - FORMAT.md
   - templates/prompts/*.tmpl
 generated: { by: claude/opus-5, at: 2026-07-29 }
-verified: []
+verified:
+  - { by: "human:tindang", at: 2026-07-29, act: freeze, authority: human }
+  - { by: "human:tindang", at: 2026-07-29, act: gate, authority: human, outcome: PASS,
+      receipt: /tasks/build-worked-example.d/runs/3.md }
+    # A17 pinned this to `human`: `scope:` includes FORMAT.md, a sensitive_path. The
+    # declared `sensitivity:` was never the binding constraint.
 ---
 ## CARD
 goal: the token method expressed as format, not discipline
 gives: the three tiers, the fragment resolver, the brief budget
 scope: FORMAT.md §4 · FORMAT.md §7 · templates/prompts/*.xml.tmpl
-beat: verify · next: blocked on the validator (build-worked-example) for its receipt
+beat: done · gate PASS by human:tindang on receipt 3
 
 ## RULES
 <must>
@@ -67,9 +72,9 @@ least-sure: rules — the CARD line ceiling, and whether the budget is bytes or 
 red-first: every check above MUST fail for the right reason before BUILD.
 
 ## EVIDENCE
-receipt: <tasks/define-read-protocol.d/runs/1.md — pending the M0 validator>
-gate: <pending>
-scope-check: <pending>
+receipt: /tasks/build-worked-example.d/runs/3.md — 18/18, the shared M0 evidence run
+gate: PASS — human:tindang, 2026-07-29, authority `human` (A17 floor)
+scope-check: FORMAT.md only — inside the declared scope
 
 ## LESSONS
 - Measured: cost = turns x context-per-turn; the tier rule is the only lever that touches every one of ~600 turns -> add learn method

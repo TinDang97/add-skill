@@ -2,7 +2,7 @@
 type: Task
 title: Define authority and evidence rules
 goal: a headless run has a legal freeze path and no gate can pass on a stale or absent receipt
-status: verify
+status: done
 depth: standard
 kind: docs
 sensitivity: security
@@ -20,13 +20,18 @@ gives:
 scope:
   - FORMAT.md
 generated: { by: claude/opus-5, at: 2026-07-29 }
-verified: []
+verified:
+  - { by: "human:tindang", at: 2026-07-29, act: freeze, authority: human }
+  - { by: "human:tindang", at: 2026-07-29, act: gate, authority: human, outcome: PASS,
+      receipt: /tasks/build-worked-example.d/runs/3.md }
+    # A17 pinned this to `human`: `scope:` includes FORMAT.md, a sensitive_path. The
+    # declared `sensitivity:` was never the binding constraint.
 ---
 ## CARD
 goal: amendments A1–A3 — who may freeze, and what makes a receipt count
 gives: the authority ladder, the freshness rule, the record-never-execute rule
 scope: FORMAT.md §3 · FORMAT.md §8
-beat: verify · next: human gate required (sensitivity: security) after the validator receipt
+beat: done · gate PASS by human:tindang on receipt 3
 
 ## RULES
 <must>
@@ -72,9 +77,9 @@ least-sure: contract — mtime vs content hash for the freshness predicate
 red-first: every check above MUST fail for the right reason before BUILD.
 
 ## EVIDENCE
-receipt: <tasks/define-authority-rules.d/runs/1.md — pending the M0 validator>
-gate: <pending — sensitivity: security requires a human gate, always>
-scope-check: <pending>
+receipt: /tasks/build-worked-example.d/runs/3.md — 18/18, the shared M0 evidence run
+gate: PASS — human:tindang, 2026-07-29, authority `human` (A17 floor)
+scope-check: FORMAT.md only — inside the declared scope
 
 ## LESSONS
 - 2.5 carried `gate_mode: ai-plan-verify` in a PLAN header; without a first-class ladder a headless run must either block or forge -> add learn method
