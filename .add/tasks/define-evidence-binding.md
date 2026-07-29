@@ -14,6 +14,8 @@ needs:
   - /tasks/define-task-schema.md#gives
   - /tasks/define-authority-rules.md#gives
 gives:
+  - "a receipt declares its kind: test-ids | command-exit | artifact-hash | human-observed (A24)"
+  - "each kind states what it proves AND what it does not; a weaker kind is a visible weakening"
   - "a Run receipt records observed test IDs and their outcome, plus ids: parsed|unknown"
   - "freeze refuses unless every Must and Reject appears in at least one check's covers:"
   - "gate refuses unless every CHECKS id appears in the receipt with outcome: pass"
@@ -40,6 +42,8 @@ beat: verify · next: human gate required (sensitivity: security) after the vali
 - M4 `red_first: proven` requires a prior receipt on the same task in which those same IDs failed
 - M5 a brief compiles byte-identically from the same inputs and prints a content hash; the gate stamps it
 - M6 `covers:` has a defined referent at every depth, including `quick`, which has no RULES section
+- M7 a receipt declares its evidence `kind:`, and each kind states what it proves AND what it does not;
+     a gate records the kind it accepted, so a weaker kind is a visible weakening rather than a silent one (A24)
 </must>
 <reject>
 - R:LABEL a design where `covers:` names a rule but binds to no observation -> "LABEL"
@@ -78,6 +82,9 @@ least-sure: contract — the degradation. `covers_unverified` as `info` is the p
 - test_brief_deterministic · covers: M5 · the same inputs compile to the same bytes and the same hash
 - test_gate_stamps_brief · covers: M5 · a gate stamp carries the hash of the brief that drove the work
 - test_covers_referent_quick · covers: M6 · a quick-depth check may cite `goal` or `G<n>` and nothing else
+- test_kind_is_declared · covers: M7 · a receipt with no `kind:` cannot earn a gate
+- test_weaker_kind_is_recorded · covers: M7 · a `command-exit` gate carries `covers_coarse`, never a silent pass
+- test_doc_profile_has_a_path · covers: M7 · a `doc`-profile task reaches a gate without `ids: unknown`
 red-first: every check above MUST fail for the right reason before BUILD.
 
 ## EVIDENCE

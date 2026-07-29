@@ -1,6 +1,6 @@
 ---
 okf_version: "0.2"
-abf_version: "1.2"
+abf_version: "1.3"
 name: add-skill
 profile: cli-tool
 engine: add/3.0.0

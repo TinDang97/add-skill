@@ -5,7 +5,9 @@ description: >-
   v4 is self-contained and supersedes v2 and v3. It carries v3's confirmed evidence base
   and design forward, adds the second standards audit v3 never ran (ATG), closes the last
   shared-mutable-file hole, gives the human a way to follow work in flight, and resolves
-  the skill-identity collision that would have overwritten a live 2.5 install.
+  the skill-identity collision that would have overwritten a live 2.5 install. §11–§13 add
+  a proactive review of v4 itself (seven findings, two settled by test), the proactive
+  layer that gives the affordance chain a root, and the staged execution plan.
 status: draft
 version: 4.0-draft
 supersedes: [PROPOSAL.md@v2 (2026-07-29), PROPOSAL-v3.md@v3 (2026-07-29)]
@@ -436,6 +438,9 @@ in `CLOSE` (A18).
 |---|---|---|---|
 | **A19** | **ATG citation repair.** Cite §3 for `v_j = (i_j, f_j, o_j)` and note that ATG's node is *one concrete tool call*; cite §4.3 for *Minimal Necessary Subgraph Repair*; add a §12 ledger row declaring **the frozen external interface** an ABF extension ATG does not define | R1. Methodology rule 7 applied symmetrically. A validator built on a mis-cited spec certifies nothing — and so does a format built on a mis-read paper | `f7` (renamed `align-standards-citations`) |
 | **A20** | **`log.md` is compiled, not appended.** Entries render from node `verified[]` stamps and `generated.at`, grouped under ISO `## YYYY-MM-DD` headings, newest first. A trailing `## Notes` block is human-owned and preserved verbatim across recompiles. Rotation (A4) moves whole rendered groups into `CLOSE` | R3 + L7. Removes the last shared mutable file, so parallel subagents in worktrees cannot conflict; and every log line now traces to a stamp on a node, which is what makes it evidence rather than narration | `f5` |
+| **A22** | **Content-addressed receipt freshness.** In a git repository, a receipt records the blob hash of every file in the task's `scope:` at run time; freshness is a hash comparison, not a timestamp comparison. `mtime` remains the fallback outside a git repo, and a receipt records which predicate it used | **P2, empirically confirmed.** FORMAT §8.1 already flagged mtime as the one assumption it expected to replace, and isolated the predicate for exactly this. The replacement is now due | `f3` |
+| **A23** | **Compiled artifacts declare their regeneration.** `init` ships a `.gitattributes` marking `index.md` and `log.md` as engine-generated; the documented merge resolution is `doctor --sync`, never a hand-merge; `graph.json` stays gitignored | **P3.** D-8 removed concurrent-writer conflicts inside a worktree and did nothing about merge conflicts between branches — a compiled file that is committed still collides | `f9` |
+| **A24** | **Evidence kinds.** `covers:` binds to an *observation*, and a test ID is only one kind of observation. A receipt declares its `kind:` — `test-ids` · `command-exit` · `artifact-hash` · `human-observed` — each with its own binding rule and its own honesty about what it does and does not prove | **P5.** A15 defined evidence as parsed test IDs. In the `doc` and `ui-app` profiles there is often no runner, so `ids: unknown` would become the normal case and `covers_unverified` a finding nobody reads — the exact silent-degradation failure A15 exists to prevent | `f10` |
 | **A21** | **The milestone amendment protocol.** A scope change records `amended: { by, at, authority, reason }`; removed tasks move to `status: dropped` with a reason and keep their nodes; `EXIT` criteria are append-only (struck, never deleted); any node whose `needs:` cite a dropped task's `gives:` is flagged **stale** and must re-verify before its next gate | R6. Frozen-`gives` evolution was specified at the task altitude and nowhere at the milestone altitude — which is where a human actually changes their mind | `f9` |
 
 ---
@@ -511,7 +516,7 @@ in `CLOSE` (A18).
 
 | id | slug | goal |
 |---|---|---|
-| **v7** | **`eval-trigger-precision`** | **NEW, runs first.** Does the description fire on in-regime requests (recall) and stay silent on out-of-regime ones (precision)? Includes the 2.5-bundle routing case. Nothing downstream means anything if the skill never loads |
+| **v7** | **`eval-trigger-precision`** | **NEW, runs first.** Does the description fire on in-regime requests (recall) and stay silent on out-of-regime ones (precision)? Includes the 2.5-bundle routing case. **Harness: `skill-creator`'s `scripts/run_eval.py`** — a literal trigger-evaluation runner (*"tests whether a skill's description causes Claude to trigger … for a set of queries"*) with `aggregate_benchmark.py` for variance, shipped in the `anthropic-agent-skills` marketplace copy (the plain `~/.claude/skills/skill-creator/` install does **not** carry it). We write the query set, not the runner. ⚠ `run_loop.py` will optimise a description indefinitely; **D-9's three-revision cap binds it**, or we reproduce the wrapper-tuning asymmetry the pilot flagged against itself |
 | v0 | `eval-unwrapped-drive` | **precondition** — with no wrapper, does a cold agent invoke the engine, pick a lane, freeze before building, run checks red first, gate on a receipt? ≥3 reps, under the stop rule |
 | v1 | `eval-conformance` | counted, in CI: engine calls per lane · `init` = 8 files · brief bytes ≤ budget · a fresh receipt at every gate · an unmet `covers:` is refused · the same brief hashes identically twice · approval prompts per lane · `doctor` = 0 errors · **a hand-authored bundle validates (G7)** · **`--since` is complete against a known event set (G8)** · **a parallel wave produces no file conflict (A20)** |
 | v2 | `eval-cold-resume` | a two-week-cold agent — **and a post-compaction agent** — reconstructs the active node and next action from `status` + one T2 read |
@@ -661,6 +666,10 @@ shared mutable state, and this is the project's own first use of L-E.
 | *(v4)* the skill may never fire | — | **`v7`** | MEASURED, not assumed |
 | *(v4)* installing overwrites a live 2.5 skill | **D-7 identity contract** | `d2` | CLOSED |
 | *(v4)* authored duplicates rot in a day | **L7** | `e8` (`spec_stale`), `v5` | MITIGATED |
+| *(P1)* the affordance chain had no first link — nothing caused the first engine call | **§12 proactive layer** (E12) | `v7`, `v0` with the hook disabled as the control | MITIGATED, and falsifiable |
+| *(P2)* every committed receipt reads stale in a fresh checkout | **A22** content-addressed freshness | `v1` in CI on a clean clone — the case that would have failed every run | **CLOSED once A22 lands** |
+| *(P3)* compiled artifacts still collide at merge | **A23** | `v1` (parallel-wave merge smoke) | MITIGATED |
+| *(P5)* evidence meant test IDs, so two of six profiles degrade by default | **A24** evidence kinds | `v1` (a `doc`-profile gate with a non-test evidence kind) | MITIGATED |
 
 **Minimality.** Removing any task drops a goal, a law or an assertion. v4 adds exactly one task
 (`v7`) and extends five (`f5`, `f7`, `f9`, `e6`, `e8`) — because every other finding lands as
@@ -793,6 +802,8 @@ consecutive reds → re-open direction (E5) · the fold nudge (E6) · the self-c
 |---|---|---|---:|
 | **E8** | **Lane advisory.** `new` and `status` compute a mechanical lane signal from `scope:` breadth × `kind` × `sensitivity`; when the chosen `depth` is more expensive than the signal, `next:` names the cheaper legal lane. **Advisory only** — a notary reports, it does not refuse (L3) | A17 pins the floor *upward* by path match. Nothing pushed *downward*, and over-classification is precisely what made 2.5 expensive on cheap work | ~25 |
 | **E9** | **`status --since <ref\|date>`.** Renders, from `verified[]` + git: gates since the mark and their outcomes, receipts and whether they were fresh, files touched, approvals waiting, deltas opened | G8. The human could see a gate request and a close packet, and nothing in between — the whole middle of the work was invisible unless they read the diff | ~40 |
+| **E11** | **Node aging.** `status` prints the age of every active node from its newest stamp; past a threshold `next:` reads *"this node has been in `build` for 11 days — resume it or drop it with a reason."* Mechanical: a date subtraction, so a notary may compute it | **P4.** Nothing detected a node abandoned mid-beat. On a six-month bundle, zombie actives are how "the bundle is the durable list" quietly becomes false — and they are invisible precisely because `status` reports them as work in progress | ~15 |
+| **E12** | **Proactive orientation** — see §12. A `SessionStart` hook, gated on `.add/` existing, runs `add status --brief` so the bundle speaks once before it is spoken to | **P1.** `next:` is the adoption mechanism and it can only appear *after* an engine call. Nothing in the design causes the first one | ~0 engine lines; a manifest entry |
 | **E10** | **`spec_stale` finding.** `doctor` reports a spec whose `Now` section predates the newest folded delta on that lens; `--sync` recompiles `index.md`'s TOC and `log.md` | R10: three authored facts went stale in one day at 20 nodes. Compiling what can be compiled (L7) fixes two of the three mechanically; the third needs a signal, and a date comparison is a signal a notary may compute | ~15 |
 
 ### Considered and declined
@@ -807,14 +818,155 @@ consecutive reds → re-open direction (E5) · the fold nudge (E6) · the self-c
 
 ---
 
-## 11 · Immediate next actions
+## 11 · Proactive review — seven findings against v4 itself
 
-1. **Correct the three stale facts (R10)** in `.add/`: `specs/system#Now` (15 → 10 verbs),
-   `index.md`'s TOC entry for `build-worked-example`, and that node's `EVIDENCE` counts. Then
-   make the first commit (R11), so the rollback claim has history behind it.
-2. **Land A19–A21 in `FORMAT.md`** (→ v1.2-draft) under `f7`, `f5` and `f9`.
-3. **Gate `f6`** — it is at `verify` with a green, red-first-proven receipt, blocked only on the
-   human freeze that A17 pins (its `scope:` includes `scripts/**`). Gating it closes M0's only
-   evidence path.
-4. **Then M1 `e1`** — port the frontmatter parser out of `scripts/validate_bundle.py`, which was
-   written to be that port.
+R1–R11 came from auditing v3. These come from attacking v4, and two of them were settled by
+running a test rather than by reasoning.
+
+| # | finding | how it was established | lands as |
+|---|---|---|---|
+| **P1** | **The affordance layer cannot bootstrap itself.** L4 says the engine teaches at the moment of use, and Lesson #2 says that is the difference between 0% and immediate adoption. But `next:` only exists *after* an engine call, and **nothing in the design causes the first one**. Every mechanism in this proposal is reactive: `status` when asked, the gate contract when a gate is requested, `--since` when a human thinks to run it | design audit — traced the adoption chain backwards and found no first link | **§12, the proactive layer** + **E12** |
+| **P2** | **Receipt freshness fails in every fresh checkout — confirmed.** A `git worktree add` of this repo set *both* an in-scope file and the receipt to the same new mtime (`21:41:36Z`) while the receipt's recorded `at:` stayed at its original date. Under FORMAT §8.1 the receipt therefore reads **stale**. Consequences: `v5`'s dogfood CI runs on a fresh clone, so `v1`'s assertion *"a fresh receipt at every gate"* would fail **deterministically, every run**; a worktree created after a receipt exists cannot re-gate; a cold clone reports `receipt_stale` on every gated task | **kill-test run this session** — worktree created, mtimes read, worktree removed | **A22** — content-addressed freshness |
+| **P3** | **Compiled artifacts are committed, so they still conflict — at merge.** D-8 (mine) removed *concurrent-writer* conflicts inside a worktree and silently left *merge* conflicts between branches: `index.md`'s body and `log.md` both change on both sides of any parallel wave that gets merged. I recommended D-8 without stating this cost | design audit of my own recommendation | **A23** — `.gitattributes` + `doctor --sync` as the documented resolution |
+| **P4** | **Zombie active nodes.** Nothing ages a node. A task abandoned mid-`build` is reported by `status` as work in progress forever, which is worse than being reported as missing — on a six-month bundle it is how "the bundle is the durable list" quietly stops being true | scale audit against A12 | **E11** — node aging |
+| **P5** | **Evidence is defined as test IDs only.** A15 binds `covers:` to parsed test IDs. In the `doc` and `ui-app` profiles — two of the six we ship — there is often no runner at all, so `ids: unknown` becomes the *normal* case and `covers_unverified` becomes a finding nobody reads. That is the silent degradation A15 exists to prevent, arriving through the front door | cross-check of §3e's profile table against §8.3 | **A24** — evidence kinds |
+| **P6** | **`v7`'s harness exists, and I named the wrong copy.** v4 implied `skill-creator` provides trigger-eval tooling. The **installed** `~/.claude/skills/skill-creator/` ships only `init_skill.py`, `package_skill.py`, `quick_validate.py` — no eval. The **marketplace** copy ships `run_eval.py`, whose own docstring is *"Tests whether a skill's description causes Claude to trigger (read the skill) for a set of queries"*, plus `aggregate_benchmark.py`, `improve_description.py` and `run_loop.py`. So `v7` is a query set, not a harness build — **and `run_loop.py` will optimise a description indefinitely unless D-9's three-revision cap binds it** | `ls` + reading `run_eval.py`'s docstring | `v7` re-specified; M4 gets cheaper, and gains one honesty constraint |
+| **P7** | **The 2,400-line engine budget has no per-task allocation.** §6's falsifier says "if the engine passes 2,400 lines before `e8`, drop a verb" — which means the first overflow signal arrives at the *ninth* engine task, when nine tasks' worth of work is already sunk | read §6's own falsifier and asked when it fires | a per-task line budget, asserted by `v5` in CI from the first task |
+
+**What P2 changes about the method, not just the code:** the format predicted this. FORMAT §8.1
+carries a recorded ⚠ saying mtime *may* be unsound and that the predicate is isolated so it can
+be replaced. The discipline worked — a flagged assumption was cheap to kill and cheap to
+replace. That is the strongest evidence so far that "write the ONE riskiest assumption down"
+earns its line.
+
+---
+
+## 12 · The proactive layer (P1)
+
+**The problem, stated exactly.** Adoption depends on `next:`. `next:` depends on an engine call.
+Nothing depends on nothing — so the chain has no root. In the 2.5 pilot this was hidden because
+a loop-enforcing wrapper made the first call. A skill has no wrapper, which is precisely what
+`v0` is built to measure, and P1 says the measurement is likely to fail for a reason no amount
+of skill prose can fix: **the skill cannot speak until it is spoken to.**
+
+**The one place ADD is allowed to speak first.** A `SessionStart` hook, shipped in
+`plugin.json`, gated on the repository containing `.add/`:
+
+| property | value |
+|---|---|
+| fires | once per session, and **only** in a repository that already has a bundle |
+| runs | `add status --brief` — T0 only |
+| costs | ~200–400 tokens, in ADD repositories only. Zero in every other session |
+| says | the active node, the beat, build progress from git, the exact next command, and the cheapest legal lane |
+| never | writes, gates, commits, or asks for approval. It is a read and a sentence |
+
+**Why this is consistent with declining the MCP transport.** The MCP option was declined because
+~800 tokens of always-on schema is charged to *every* session including those with no ADD work.
+This hook is charged only where a bundle exists — it is the same progressive-disclosure rule,
+applied to the moment of orientation rather than to the tool list.
+
+**The proactivity ladder, and where it stops.** Proactive is not the same as autonomous, and the
+line matters more than the feature:
+
+| level | behaviour | shipped? |
+|---|---|---|
+| 1 · **orient** | on session start in an ADD repo, say where the work stands and what comes next | **yes** (E12) |
+| 2 · **notice** | in `status` output, surface what the human would want flagged: a node aging in `build` (E11), open deltas past the fold threshold (E6), three consecutive reds (E5), a lane cheaper than the one chosen (E8), a stale spec (E10) | **yes**, all already in the plan — §12 is what makes them *arrive* rather than wait to be queried |
+| 3 · **propose** | name the exact next command, always, including the cheap lane | **yes** (L4) |
+| 4 · **act** | run the proposed command without being asked | **no, and never.** The engine records; the human and the agent decide. An engine that acts unasked owns outcomes it has no authority for, and the authority ladder is the product |
+
+Level 4 is the boundary. Everything above it is ADD volunteering information; crossing it would
+make ADD an actor, and every trust artifact in this proposal assumes it is a notary.
+
+**Falsifier:** if `v7` and `v0` pass at the same rate with the hook disabled, the hook is
+ceremony and gets cut. It is a one-line manifest entry precisely so that cutting it is free.
+
+---
+
+## 13 · The plan
+
+### 13a · What is done, with evidence
+
+| | state |
+|---|---|
+| `FORMAT.md` | v1.2-draft — A1–A21 landed |
+| `PROPOSAL.md` | v4 — the single proposal of record; v2 and v3 folded in and deleted |
+| `.add/` | 20 nodes, 50 edges, validator exit 0, zero findings |
+| `tests/` | 14 passing, red-first proven by receipt 1 (13/13 fail) → receipt 2 (14/14 pass) |
+| git | first commit `4f1a9bc`, clean tree |
+| M0 tasks | 10/10 written and at `status: verify` · **0 gated** |
+
+### 13b · Stage 1 — close M0 (one session)
+
+Sequenced because each step's output is the next step's input.
+
+| # | step | owner task | exit condition |
+|---|---|---|---|
+| 1 | Land **A22** (content-addressed freshness) in `FORMAT.md` §8.1, replacing the mtime predicate and recording which predicate a receipt used | `f3` | §8.1's ⚠ assumption is discharged, and the replacement names its own fallback |
+| 2 | Land **A23** (`.gitattributes`, `doctor --sync` as merge resolution) and **A24** (evidence kinds) | `f9`, `f10` | a `doc`-profile task has a legal, non-degraded evidence path |
+| 3 | Extend the validator **only** with what a static T0 scan can decide — that every compiled file is declared regenerable (A23). **Freshness is not added here:** `validate_bundle.py`'s own docstring rules that `receipt_stale` is a gate-time condition needing a receipt and a freeze stamp, so A22's *implementation* belongs to `e7` in M1 while its *rule* lands in `f3` now. Landing it in the scanner would report an absence of findings that was never checked | `f6` | red first, then green — and the freshness rule is written without being prematurely implemented |
+| 4 | **Human gate on `f6`** — A17 pins it to `human` because `scope:` includes `scripts/**` | `f6` | the gate stamp exists, or a HARD-STOP with a reason |
+| 5 | Gate the remaining nine M0 tasks against `f6`'s receipt; render `CLOSE` with the census | `M0` | `status` shows M0 `done`; `log.md` date groups rotate into `CLOSE` |
+
+**Stage 1 exit:** every M0 rule is not merely written but *gated*, which is the first time this
+project's own claim — *a gate is earned by a receipt* — is true of the project itself.
+
+### 13c · Stage 2 — M1 engine core (3–4 sessions, red/green throughout)
+
+Built in dependency order, with a **line budget per task** (P7) so overflow is visible at task
+two rather than task nine. Budget: 2,400 total, ~15% held in reserve.
+
+| wave | tasks | line budget | why this order |
+|---|---|---:|---|
+| 1 | `e1` parse+atomic-write · `e2` graph+fragment resolver | 180 · 260 | everything else reads through these; `validate_bundle.py` was written to be this port |
+| 2 | `e3` init+profiles · `e4` node verbs · `e6` status | 240 · 300 · 280 | the first end-to-end lane (`init` → `new` → `status`) becomes usable, and dogfooding starts here |
+| 3 | `e5` brief compiler · `e7` receipts+learn | 260 · 220 | `e5` unblocks M3's prompts and M2's runtime reference |
+| 4 | `e12` evidence binding · `e8` doctor | 200 · 300 | the two that carry the central claim and the compiled artifacts |
+| 5 | `e9` hints · `e10` durability · `e11` package-in-skill | 60 · 90 · 60 | the affordance layer lands last, over a complete verb set |
+| | **total** | **2,450 budgeted → trim to ≤2,400 at wave 5** | the overflow rule cuts `--locate`, then `--graph`, never a law |
+
+Two rules bind every wave: **red/green on each verb**, and **`v5`'s CI asserts the running line
+total from wave 1** — a budget nobody counts is a wish.
+
+### 13d · Stage 3 — M2 ∥ M3 (1–2 sessions, worktree-parallel)
+
+This is the project's first use of its own L-E lever: two subagents, two worktrees, two briefs,
+two receipts, one gate. It is also the first real test of **A22** and **A23** — a parallel wave
+is exactly what breaks mtime freshness and merges two compiled artifacts.
+
+| worktree | tasks |
+|---|---|
+| A | `s1` skill core → `s2` trigger+routing · `s3` intake+gate+follow · `s4` token method · `s5` resume+compaction · `s6` runtime |
+| B | `p1` persona schema → `p2` method personas · `p4` author flow; `p3` prompt library |
+
+### 13e · Stage 4 — M4 prove-it, in strict order
+
+| order | task | harness | stop rule |
+|---:|---|---|---|
+| 1 | `v7` trigger precision | `skill-creator/scripts/run_eval.py` + our query set; `aggregate_benchmark.py` for variance | **3 description revisions**, enforced against `run_loop.py`'s appetite |
+| 2 | `v0` unwrapped drive | manual, ≥3 reps, no wrapper | **3 skill/hints revisions**, then narrow the claim |
+| 3 | `v1` conformance · `v5` dogfood CI | CI, counted | pass/fail, no reps |
+| 4 | `v2` resume · `v3` behavioural | ≥3 reps each | rubric |
+| 5 | `v4` scope regime | pre-registered task set | **$250 M4 budget**; overrun reports "directional, n<3" |
+| 6 | `v6` ratify or narrow | — | the claim is ratified *or* narrowed. Narrowing is a result |
+
+`v7` before `v0` before everything: each tests an assumption the next one inherits.
+
+### 13f · Stage 5 — M5 ship-it
+
+`d1` plugin manifest (allowlist · the identity contract · the `SessionStart` hook) → `d2`
+upgrade path and 2.5 routing → `d3` clean-machine smoke, without pipx.
+
+### 13g · The critical path, and what could stop it
+
+```
+A22 → f6 gate → M0 close → e1 → e2 → e4 → s1 → s2 → v7 → v0 → v6 → d1
+```
+
+| risk | signal | response |
+|---|---|---|
+| A22's hash predicate is slow on a wide `scope:` | `run` latency on a glob covering hundreds of files | hash the git index entries rather than file contents; the predicate stays isolated |
+| M1 overflows its budget mid-wave | CI's running line total | cut `--locate`, then `--graph`. Never a law, never the budget |
+| `v7` fails after three revisions | trigger recall below bar | the product narrows to *format + engine + human-driven method*, and the description says so |
+| `v0` fails after three revisions | adherence below bar | same narrowing. M4's remaining evals are deleted, not retried |
+| A profile needs a sixth spec lens | surfaces at `e3` | M0 reopens — the closed-lens claim (goal 2) was wrong |

@@ -258,3 +258,46 @@ def test_unknown_type_is_info(tmp_path):
     code, payload = run(root)
     assert code == 0
     assert "unknown_type" in codes(payload, "info")
+
+
+# --- test_compiled_files_declared · covers: M6, R:UNDECLARED -----------------
+# A23 (FORMAT §1.1): a compiled file must declare itself — a `COMPILED BODY` marker in
+# its body AND an entry in the bundle's `.gitattributes`. A human who hand-edits an
+# undeclared compiled file loses the edit at the next `--sync`; the format's job is to
+# say so beforehand. `info` only: this is a production rule, not a containment escape.
+
+
+def test_compiled_files_declared():
+    """This repo's own bundle declares both compiled files."""
+    code, payload = run(REPO / ".add")
+    assert code == 0
+    assert "compiled_undeclared" not in codes(payload)
+
+
+def test_missing_marker_is_info(tmp_path):
+    """A compiled file with no COMPILED BODY marker is reported — and still exits 0."""
+    root = minimal_bundle(tmp_path / "b")
+    write(root / ".gitattributes", "index.md merge=ours\nlog.md   merge=ours\n")
+    write(root / "log.md", "# log\n\n## 2026-07-29\n\n- a hand-written line\n")
+    code, payload = run(root)
+    assert code == 0, "a production-rule violation must never fail a bundle"
+    assert "compiled_undeclared" in codes(payload, "info")
+
+
+def test_missing_gitattributes_is_info(tmp_path):
+    """A marked compiled file with no .gitattributes entry is still undeclared."""
+    root = minimal_bundle(tmp_path / "b")
+    write(root / "log.md", "# log\n\n<!-- COMPILED BODY (A20) -->\n\n## 2026-07-29\n")
+    code, payload = run(root)
+    assert code == 0
+    assert "compiled_undeclared" in codes(payload, "info")
+
+
+def test_declared_compiled_file_is_clean(tmp_path):
+    """Marker plus .gitattributes entry: no finding."""
+    root = minimal_bundle(tmp_path / "b")
+    write(root / ".gitattributes", "index.md merge=ours\nlog.md   merge=ours\n")
+    write(root / "log.md", "# log\n\n<!-- COMPILED BODY (A20) -->\n\n## 2026-07-29\n")
+    code, payload = run(root)
+    assert code == 0
+    assert "compiled_undeclared" not in codes(payload)

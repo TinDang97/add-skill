@@ -23,6 +23,11 @@ a `library`, the public API surface. The lens is fixed; the skeleton is profiled
 - Guidance lives in engine output, never in template blockquotes that are re-read forever. (define-read-protocol)
 - Errors name the fix, not the rule: say the command that resolves it. (define-read-protocol)
 - A refusal is never silent: a refused gate prints why and what would make it pass. (define-authority-rules)
+- ADD orients once per session, unasked, in a repo that has a bundle — a `SessionStart` hook running
+  `add status --brief`. It is the only moment ADD speaks first, and it is gated on `.add/` existing so a
+  session with no ADD work pays nothing. (E12, PROPOSAL §12)
+- The proactivity ladder stops at *propose*: orient, notice, propose — never act. An engine that acts
+  unasked owns outcomes it has no authority for. (E12)
 
 ## Deltas (newest first)
 <!-- `add learn experience "<lesson>"` prepends here -->

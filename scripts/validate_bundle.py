@@ -32,6 +32,13 @@ from pathlib import Path
 ABF_TYPES = {"Project", "Milestone", "Task", "Spec", "Persona", "Prompt", "Run"}
 RESERVED = {"index.md", "log.md"}
 
+# A23 (FORMAT §1.1) — reserved files whose bodies are rendered, not authored. Each must
+# declare itself twice: a marker a human sees when they open it, and a `.gitattributes`
+# entry git sees when it merges. Only checked once a file HAS a body: an empty
+# `index.md` in the three-file minimum bundle has no generated content to lose.
+COMPILED = ("index.md", "log.md")
+COMPILED_MARKER = "COMPILED BODY"
+
 # Only these keys carry graph edges. The allowlist is the point: `scope:` holds repo
 # paths and `persona_corpus:` holds a config path — neither is a bundle edge, and a
 # pattern-matching scanner that guessed would mis-read `templates/task.md.tmpl` as a
@@ -209,10 +216,30 @@ class Scan:
         self.report["statuses"] = sorted(statuses)
         self.report["types"] = sorted(types)
 
+    # -- pass 4: A23 — compiled files declare themselves; `info` only --
+    def compiled(self):
+        attrs = self.root / ".gitattributes"
+        declared = attrs.read_text(encoding="utf-8") if attrs.is_file() else ""
+        for name in COMPILED:
+            path = self.root / name
+            if not path.is_file():
+                continue
+            _, body = parse_frontmatter(path.read_text(encoding="utf-8"))
+            if not body.strip():
+                continue  # nothing rendered yet, so nothing a human can lose
+            missing = []
+            if COMPILED_MARKER not in body:
+                missing.append(f"no `{COMPILED_MARKER}` marker")
+            if not any(line.split()[:1] == [name] for line in declared.splitlines()):
+                missing.append("no .gitattributes entry")
+            if missing:
+                self.find("info", "compiled_undeclared", f"{name}: {', '.join(missing)}")
+
     def run(self):
         self.load()
         self.edges()
         self.bodies()
+        self.compiled()
         return self
 
     @property

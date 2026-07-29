@@ -12,6 +12,8 @@ depends_on:
 needs:
   - /tasks/define-task-schema.md#gives
 gives:
+  - "a receipt is fresh iff the git blob digest of its scope: set still matches (A22)"
+  - "mtime survives only as a declared fallback outside a git tree; a receipt states which predicate it used"
   - "authority ladder: human > plan > ai-verify > process; sensitivity pins the minimum"
   - "receipt freshness: a receipt is stale if any file in scope: is newer than it"
   - "the engine records receipts; add run -- <cmd> executes, a bare gate never does"
@@ -33,6 +35,8 @@ beat: verify · next: human gate required (sensitivity: security) after the vali
 - M3 a milestone `ratified:` stamp pre-approves its member tasks at `plan` authority
 - M4 a gate refuses unless a receipt exists AND is newer than every file in the task's `scope:`
 - M5 the engine never executes a command string read from a file; `add run -- <cmd>` executes what the caller passes
+- M9 freshness is content-addressed: a receipt records the git blob digest of its `scope:` set,
+     and a gate refuses on any difference. mtime is a declared fallback, never a silent one (A22)
 </must>
 <reject>
 - R:FORGE a headless run that stamps `human` authority without a human -> "FORGE"
@@ -62,6 +66,9 @@ least-sure: contract — mtime vs content hash for the freshness predicate
 - test_ratified_pre_approves · covers: M3 · a member task of a ratified milestone freezes at `plan`
 - test_stale_receipt_refused · covers: M4, R:STALE · touching an in-scope file after the receipt makes the gate refuse
 - test_no_exec_from_node · covers: M5, R:EXEC · a node carrying a `computation:` string is never executed by `gate`
+- test_freshness_is_content · covers: M9 · a receipt records a scope digest and the gate compares digests
+- test_fresh_after_checkout · covers: M9 · a receipt survives a fresh worktree checkout that resets every mtime
+- test_predicate_is_declared · covers: M9 · a receipt states `freshness: content | mtime`; a gate never guesses
 red-first: every check above MUST fail for the right reason before BUILD.
 
 ## EVIDENCE

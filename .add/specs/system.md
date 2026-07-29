@@ -45,5 +45,6 @@ authoritative and never trusted for a gate decision.
 
 ## Deltas (newest first)
 <!-- `add learn system "<lesson>"` prepends here -->
+- [open · 2026-07-29] Compiling `log.md` and `index.md` removed concurrent WRITERS and did not remove MERGE conflicts: a committed compiled file still collides between branches. Two failure modes wear the same word "conflict", and closing one reads like closing both. A compiled artifact needs a declared regeneration path, not just a compiler. (define-compat-contract)
 - [open · 2026-07-29] This spec's own `Now` said "15 verbs" for a full day after 10 were ratified, while `index.md`'s compiled TOC and a task's EVIDENCE line carried two more contradictions — three stale authored facts in a 20-node bundle, in one day, written by the same agent that ratified the change. Discipline does not scale; compilation does. (define-log-rotation)
 - [open · 2026-07-29] 2.5's engine is 9,058 lines across 17 modules — the ≤2,000 target is a 4.5× cut, not 3×. Budget, not promise. (define-entity-model)

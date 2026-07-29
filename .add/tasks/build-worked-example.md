@@ -22,7 +22,7 @@ needs:
 gives:
   - "scripts/validate_bundle.py — exits 0 on a conforming ABF-1 bundle, non-zero with findings otherwise"
   - ".add/ in this repo as the reference example for every ABF-1 rule"
-  - "tests/test_validate_bundle.py — 14 checks, one per Must/Reject, red-first proven"
+  - "tests/test_validate_bundle.py — 18 checks, one per Must/Reject, red-first proven"
 scope:
   - scripts/validate_bundle.py
   - tests/test_validate_bundle.py
@@ -43,10 +43,13 @@ beat: verify · next: human gate required — scope matches sensitive_paths (scr
 - M3 the example exercises every fragment form: `#gives`, `#goal`, a heading slug, and one deliberate `edge_unresolved`
 - M4 the example exercises all three depths and at least three distinct `status:` values at once
 - M5 `index.md` and `log.md` are reserved files, exempt from the `type:` requirement
+- M6 a compiled file declares itself twice — a `COMPILED BODY` marker a human sees, and a
+     `.gitattributes` entry git sees — checked only once the file has a body to lose (A23)
 </must>
 <reject>
 - R:BODY a validator that requires body parsing to decide conformance -> "BODY"
 - R:FAILINFO a validator that exits non-zero on an `info` finding -> "FAILINFO"
+- R:UNDECLARED a compiled file a human can hand-edit with no warning that `--sync` will overwrite it -> "UNDECLARED"
 </reject>
 <after>
 - `python scripts/validate_bundle.py .add` exits 0 on this repo
@@ -76,11 +79,17 @@ least-sure: checks — whether the deliberate `edge_unresolved` belongs in the r
 - test_depth_and_status_coverage · covers: M4 · the example contains quick+standard+deep and >=3 statuses
 - test_reserved_files_exempt · covers: M5 · `index.md` and `log.md` produce no `type_empty` finding
 - test_no_body_parse · covers: R:BODY · the verdict is unchanged when every body is replaced with noise
+- test_compiled_files_declared · covers: M6 · this bundle's compiled files carry both declarations
+- test_missing_marker_is_info · covers: M6, R:UNDECLARED · a compiled body with no marker is reported, exit 0
+- test_missing_gitattributes_is_info · covers: M6, R:UNDECLARED · a marked file with no git entry is still undeclared
+- test_declared_compiled_file_is_clean · covers: M6 · marker plus entry yields no finding
 red-first: every check above MUST fail for the right reason before BUILD.
 
 ## EVIDENCE
-receipt: /tasks/build-worked-example.d/runs/2.md — 14/14 pass, ids: parsed, red_first: proven
-         (prior red: /tasks/build-worked-example.d/runs/1.md — 13/13 fail, validator absent)
+receipt: /tasks/build-worked-example.d/runs/3.md — 18/18 pass, kind: test-ids, ids: parsed,
+         red_first: proven, freshness: content (A22 digest over the scope set)
+         (prior reds: runs/1.md — 13/13 fail, validator absent · runs/2.md — 14/14, the A23
+          checks then failed red against a `compiled_undeclared` finding that did not exist)
 bundle scan: `python3 scripts/validate_bundle.py .add` → 20 nodes · 50 edges · 0 info · 0 error · CONFORMS · exit 0
 gate: PENDING HUMAN — `scope:` includes `scripts/**`, which matches `index.md`'s
       `sensitive_paths:`, so A17 pins the floor to `human` regardless of

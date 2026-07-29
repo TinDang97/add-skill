@@ -41,5 +41,6 @@ into `Now` at close — so the next loop reads a smaller, truer picture.
 
 ## Deltas (newest first)
 <!-- `add learn method "<lesson>"` prepends here -->
+- [open · 2026-07-29] The adoption chain had no root: `next:` is the mechanism that makes every other lever fire, and `next:` only exists AFTER an engine call, and nothing caused the first call. In the 2.5 pilot a loop-enforcing wrapper hid this. Designing an affordance without asking what triggers the first one is how a measured 0% adoption gets re-earned. (define-read-protocol)
 - [open · 2026-07-29] The 1.0-draft rule "data | architecture | security all need a per-task human freeze" made `plan` and `ai-verify` unreachable and blocked every headless run on routine data work. Batching approval through milestone ratification restores the lane — but only because ratification is bounded to the membership frozen at the stamp. An authority ladder without a bound on batching is a blank cheque. (define-authority-rules)
 - [open · 2026-07-29] Phase decomposition of the 2.5 pilot: specify+scenarios+contract = 3% of tokens; tests 34% + verify 30% = 64%. Writing specs is nearly free — executing trust is the cost. Cutting spec volume buys nothing and costs the floor. (define-read-protocol)

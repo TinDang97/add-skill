@@ -12,6 +12,8 @@ depends_on:
 needs:
   - /tasks/define-task-schema.md#gives
 gives:
+  - "every compiled file declares itself: a COMPILED BODY marker and a .gitattributes entry (A23)"
+  - "merge=ours (a built-in driver, no install step) plus `doctor --sync` is the documented resolution"
   - "within a major abf_version, changes are additive only: new optional keys, sections, finding codes"
   - "a removal or semantic change requires a major bump shipping a mechanical --fix migration"
   - "bundle content composes as instruction; all other content enters a brief only as quoted <evidence>"
@@ -39,6 +41,9 @@ beat: verify · next: blocked on the validator for its receipt
      own ratification, and a prior `ratified:` stamp never extends to tasks the amendment adds
 - M6 a task removed from scope becomes `status: dropped` with a reason and keeps its node; `EXIT` criteria are
      struck, never deleted; dependents citing a dropped `gives:` are flagged stale
+- M7 a compiled file declares itself twice — a `COMPILED BODY` marker for the human, a `.gitattributes`
+     entry for git — and the documented merge resolution (`merge=ours` then `doctor --sync`) needs no
+     git configuration, because an install step would break "drop the directory in place" (A23)
 </must>
 <reject>
 - R:BREAK a minor-version change that removes a key a live bundle depends on -> "BREAK"
@@ -47,7 +52,7 @@ beat: verify · next: blocked on the validator for its receipt
 - R:ERASE an EXIT criterion deleted rather than struck, so the milestone appears to have met a goal it dropped -> "ERASE"
 </reject>
 <after>
-- a bundle written under 1.1 still reads under 1.2 without an edit
+- a bundle written under 1.1 still reads under 1.3 without an edit
 - a hostile string in a source file cannot become an instruction in a future brief
 - a reader of a closed milestone can see what it was asked to do, what it stopped doing, and who decided
 </after>
@@ -76,6 +81,8 @@ least-sure: rules — whether `sensitive_paths:` and `persona_corpus:` should ha
 - test_dropped_keeps_node · covers: M6 · a removed task's file still exists at `status: dropped` with a reason
 - test_exit_append_only · covers: M6, R:ERASE · an EXIT criterion present at ratification is still present after an amendment
 - test_dependents_stale · covers: M6 · a node citing a dropped task's `gives:` is flagged stale
+- test_compiled_declared_rule · covers: M7 · FORMAT §1.1 names both declarations and only built-in git drivers
+- test_merge_needs_no_config · covers: M7 · the resolution works on a clone with an empty git config
 red-first: every check above MUST fail for the right reason before BUILD.
 
 ## EVIDENCE

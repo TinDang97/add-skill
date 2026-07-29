@@ -7,6 +7,10 @@
 
 ## 2026-07-29
 
+- process:pytest · tasks/build-worked-example · receipt 3 — 18/18 pass, kind test-ids, freshness content, red_first proven
+- claude/opus-5 · FORMAT.md · landed A22–A24 as v1.3-draft; the mtime assumption was tested and replaced
+- human:tindang · FORMAT.md · ratified — proactive layer shipped with a falsifier (E12); Stage 1 approved
+- claude/opus-5 · PROPOSAL.md · v4 §11–§13 — seven proactive findings, two settled by kill-test; the plan
 - process:pytest · tasks/build-worked-example · receipt 2 — 14/14 pass, ids parsed, red_first proven
 - process:pytest · tasks/build-worked-example · receipt 1 — 13/13 fail (validator absent), the red-first record
 - claude/opus-5 · scripts/validate_bundle.py · built — bundle scan: 20 nodes · 50 edges · 0 error · CONFORMS

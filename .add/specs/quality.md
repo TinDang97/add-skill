@@ -35,5 +35,6 @@ documents run-to-run variance up to 8× on tokens and a complete fidelity flip
 
 ## Deltas (newest first)
 <!-- `add learn quality "<lesson>"` prepends here -->
+- [open · 2026-07-29] A kill-test beat the reasoning: `git worktree add` sets EVERY checked-out file's mtime to checkout time, so a committed receipt reads stale in any fresh clone, worktree, or CI run. The conformance assertion "a fresh receipt at every gate" would have failed deterministically on every dogfood CI run — an eval that fails for a reason unrelated to what it measures teaches nothing and gets muted. Test the predicate, not the intention. (define-authority-rules)
 - [open · 2026-07-29] Our own trust chain had a forgeable link: `covers:` named a check, the receipt reported `passed: n`, and nothing tied the two. A gate could pass on checks that were never written. Evidence is only evidence when the *specific* claim is bound to the *specific* observation — counting green is not the same as confirming the named check ran. (define-evidence-binding)
 - [open · 2026-07-29] The 2.5 benchmark's own fairness checklist flags that ADD ran under a loop-enforcing prompt wrapper tuned across 3 iterations while the comparison arm ran raw. A plain skill has no wrapper — adoption must be measured, not inherited. (build-worked-example)
