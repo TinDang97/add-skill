@@ -26,13 +26,14 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 ratified: []
 amended:
   - { by: "human:tindang", at: 2026-07-29, authority: human, reason: "A1 line-budget rebase — the twelve per-task allocations were written in code lines while the 2,400 ceiling is wc -l. Re-derived in the ceiling's unit; 660 code lines of surface pre-booked as cuts. See ## AMENDMENTS" }
+  - { by: "human:tindang", at: 2026-07-29, authority: human, reason: "A2 — A1's falsifier was a ratio between two estimates, so it fired at e2 while its conclusion was false. Restated as one measurable: cumulative consumed vs cumulative allocated, checked at every gate. A1 left unedited per §3.6" }
 verified: []
 ---
 ## CARD
 goal: ten verbs, ≤2,400 lines, stdlib only, shipped inside the skill — and dogfooded here
 shape: five waves; each wave's line budget is asserted in CI so overflow shows at wave one
-state: wave 1 — e1 done (gated PASS, 15/15) · budget rebased by amendment A1, reserve 8 lines
-next: e2 `compile-graph` — budget 347 lines `wc -l`; it also tests A1's 0.75-density assumption
+state: wave 1 CLOSED — e1 and e2 gated PASS (31 checks) · engine 430/2400 · +162 lines ahead of plan
+next: wave 2 — e3 `init+profiles` ∥ e4 `node verbs` ∥ e6 `status`, budgets 213 · 320 · 160
 
 ## SCOPE
 In:  `add/scripts/add.py` (the engine) · its templates, profiles and method personas ·
@@ -65,6 +66,7 @@ risks:
 - [ ] ten verbs green, each built red-first, each ending in a `next:` line   (← every e-task)
 - [ ] engine ≤ 2,400 lines **`wc -l`**, asserted in CI from wave one          (← build-durability)
 - [ ] every per-task line budget is asserted in the SAME unit as the ceiling  (← amendment A1)
+- [ ] cumulative consumed ≤ cumulative allocated at every gate                (← amendment A2)
 - [ ] `.add/` in this repo is driven by the engine, not by hand              (← package-in-skill)
 - [ ] `python3 add/scripts/add.py` runs from a clean checkout with zero install (← package-in-skill)
 - [ ] every FORMAT rule the validator enforces still holds after the engine writes (← build-doctor)
@@ -85,7 +87,7 @@ twelve tasks the gap is **1,337 lines**, not the 65 the first reading suggested.
 | `--locate` dropped | 50 | e6 |
 | `--graph` dropped | 70 | e6 |
 | `status --since` dropped — R8's window is served by `log.md`'s date groups | 40 | e6 |
-| `doctor` reuses `validate_bundle.py`'s checks instead of reimplementing them | 150 | e8 |
+| `doctor` runs its checks over **e2's compiled graph** instead of building its own scan | 150 | e8 |
 | `init` ships 2 profiles as code; the other 3 become template data | 80 | e3 |
 | `new`/`freeze`/`done` share one node-transition path | 60 | e4 |
 | `brief` renders from e2's compiled graph rather than its own traversal | 60 | e5 |
@@ -110,6 +112,35 @@ plan is 322 lines over and a verb must go**, which is a D-2 change and needs its
 
 **No task left scope, so no `status: dropped` node and no `needs:` propagation.** D-6 is untouched:
 the ceiling did not move.
+
+> **Corrected within the hour of writing.** The `e8` row first read "*reuses `validate_bundle.py`'s
+> checks*". It cannot: the validator lives in `scripts/` as repo tooling, while the engine ships
+> **inside the skill directory with zero install** and therefore may not import out of this repo.
+> The real 150 lines come from `doctor` running over e2's compiled graph rather than building a
+> second scan — same saving, sound mechanism. Caught by asking what `e8` would actually import.
+
+### A2 · 2026-07-29 · the A1 falsifier was malformed; restated (human:tindang)
+A1 predicted: *if wave 2 lands at 0.65 code/total the plan is 322 lines over and a verb must go.*
+**e2 landed at exactly 0.65 — and the plan is 162 lines ahead.** The prediction fired while its
+conclusion was false, because it silently assumed A1's code-line estimates were right. e2 needed
+**120 code lines against 260 allocated**: it is thin glue over e1, not new machinery. Two wrong
+parameters cancelled.
+
+A1 is left **unedited** (§3.6 — amendments are recorded, never rewritten). It is superseded here.
+
+**The restated falsifier — one measurable, checked at every gate:**
+
+> cumulative lines consumed vs cumulative lines allocated for all gated tasks.
+> **Trigger: consumed > allocated. Response: the next cut is a verb** (`--locate`, `--graph` and
+> `status --since` are already spent by A1).
+
+| after | allocated (cum.) | consumed (cum.) | margin |
+|---|---:|---:|---:|
+| e1 | 245 | 245 | 0 |
+| e2 | 592 | 430 | **+162** |
+
+Density is demoted to an observation. It is a ratio between two estimates and can never be a
+trigger — that is the defect A2 exists to remove.
 
 ## STRATEGY
 approach: dependency-first — nothing can be built before the thing that reads and writes a

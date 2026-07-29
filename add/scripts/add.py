@@ -23,9 +23,10 @@ half-parsed into a plausible wrong value.
 
 from __future__ import annotations
 
+import json
 import os
 import re
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 FENCE = re.compile(r"\A---\n(.*?)\n---\n?(.*)\Z", re.DOTALL)
 BLOCK_SCALARS = {">", ">-", ">+", "|", "|-", "|+"}
@@ -243,3 +244,187 @@ def write(path: Path, text: str) -> None:
     finally:
         if tmp.exists():
             tmp.unlink()
+
+
+# ===================================================================== the graph (e2)
+#
+# One compiled graph, built from T0 reads. Every other verb reads this instead of walking
+# the tree itself. Three rules from the format shape it:
+#
+# * **Edges come from an allowlist, never a heuristic** (§3.3). `scope:` holds repo paths and
+#   `persona_corpus:` a config path; a scanner that guessed would read `templates/task.md.tmpl`
+#   as a link to `/task.md` — observed 2026-07-29.
+# * **Fragments resolve in a fixed order** (§3.3): frontmatter key first, heading slug second,
+#   `edge_unresolved` third. Ordered, so one reference can never resolve two ways.
+# * **Activity is derived, never stored** (§3.4). There is no pointer to corrupt.
+
+EDGE_KEYS = ("depends_on", "needs", "tasks", "milestone", "relates_to", "task", "supersedes")
+ACTIVE_STATES = ("direction", "build", "verify")
+CACHE_NAME = "graph.json"
+
+
+def cid_of(root: Path, path: Path) -> str:
+    """A bundle-absolute concept ID (OKF §2): `/tasks/x.md`, never a filesystem path."""
+    return "/" + Path(path).relative_to(root).as_posix()
+
+
+def scan(root) -> dict:
+    """Every node in the bundle at T0. Bodies are not read here (law 2)."""
+    root = Path(root)
+    graph = {}
+    for path in sorted(root.rglob("*.md")):
+        node = read(path, "T0")
+        if node["fm"] is None:
+            continue  # not a node — log.md and prose files are data, not graph
+        node["cid"] = cid_of(root, path)
+        node["root"] = root
+        graph[node["cid"]] = node
+    return graph
+
+
+def _norm(src_cid: str, ref: str) -> str:
+    """Resolve a reference to a cid. Bundle-absolute wins; relative resolves against `src`."""
+    target = ref.partition("#")[0].strip()
+    if not target:
+        return src_cid
+    if target.startswith("/"):
+        return target
+    base = PurePosixPath(src_cid).parent
+    return "/" + str(PurePosixPath(os.path.normpath(str(base / target)))).lstrip("/")
+
+
+def edges(graph: dict) -> list:
+    """`[(src_cid, key, ref, target_cid|None)]` — typed, and only from EDGE_KEYS."""
+    out = []
+    for cid, node in graph.items():
+        for key in EDGE_KEYS:
+            value = (node["fm"] or {}).get(key)
+            if value is None:
+                continue
+            for ref in value if isinstance(value, list) else [value]:
+                ref = str(ref).strip()
+                if ".md" not in ref:
+                    continue
+                target = _norm(cid, ref)
+                out.append((cid, key, ref, target if target in graph else None))
+    return out
+
+
+def _section(body: str, slug: str) -> str:
+    """The body section under the heading whose kebab-cased text is `slug`."""
+    out, inside = [], False
+    for line in body.splitlines(keepends=True):
+        if line.startswith("#"):
+            if inside:
+                break
+            text = line.lstrip("#").strip().lower()
+            inside = "-".join(re.findall(r"[a-z0-9]+", text)) == slug
+            continue
+        if inside:
+            out.append(line)
+    return "".join(out).strip()
+
+
+def resolve(graph: dict, ref: str, src: str = "") -> tuple:
+    """`(cid, value, why)` under §3.3's ordered grammar.
+
+    `why` is one of `node` · `frontmatter` · `heading` · `edge_unresolved`. Frontmatter wins
+    even when a same-named heading exists, so a reference can never resolve two ways.
+    """
+    cid = _norm(src or ref, ref)
+    fragment = ref.partition("#")[2].strip()
+    node = graph.get(cid)
+    if node is None:
+        return cid, None, "edge_unresolved"
+    if not fragment:
+        return cid, node, "node"
+    fm = node["fm"] or {}
+    for key in (fragment, fragment.replace("-", "_")):
+        if key in fm:
+            return cid, fm[key], "frontmatter"
+    # Only now is a body read, and only this one (law 2 — never a bulk scan).
+    section = _section(read(node["path"], "T2")["body"], fragment)
+    return (cid, section, "heading") if section else (cid, None, "edge_unresolved")
+
+
+def active(graph: dict) -> list:
+    """Active iff `status` is direction|build|verify (§3.4). Nothing is stored."""
+    return sorted(c for c, n in graph.items()
+                  if (n["fm"] or {}).get("status") in ACTIVE_STATES)
+
+
+def ready(graph: dict) -> list:
+    """Active tasks whose every `depends_on` target is `done` — the frontier."""
+    out = []
+    for cid in active(graph):
+        node = graph[cid]
+        if (node["fm"] or {}).get("type") != "Task":
+            continue
+        deps = (node["fm"] or {}).get("depends_on") or []
+        if all((graph.get(_norm(cid, d), {}).get("fm") or {}).get("status") == "done"
+               for d in (deps if isinstance(deps, list) else [deps])):
+            out.append(cid)
+    return out
+
+
+def cycles(graph: dict) -> list:
+    """Every dependency cycle, as lists of cids. Iterative, so a bad bundle reports (law 3).
+
+    Tarjan's SCC with an explicit stack — a recursive walk would raise RecursionError on a
+    deep or cyclic graph, which is the crash R:CYCLECRASH forbids.
+    """
+    adj = {c: [] for c in graph}
+    for src, key, ref, target in edges(graph):
+        if target and key in ("depends_on", "needs", "supersedes"):
+            adj[src].append(target)
+
+    index, low, on, stack, counter, found = {}, {}, set(), [], [0], []
+    for start in graph:
+        if start in index:
+            continue
+        work = [(start, iter(adj[start]))]
+        index[start] = low[start] = counter[0]; counter[0] += 1
+        stack.append(start); on.add(start)
+        while work:
+            node, children = work[-1]
+            nxt = next(children, None)
+            if nxt is None:
+                work.pop()
+                if work:
+                    low[work[-1][0]] = min(low[work[-1][0]], low[node])
+                if low[node] == index[node]:
+                    comp = []
+                    while True:
+                        w = stack.pop(); on.discard(w); comp.append(w)
+                        if w == node:
+                            break
+                    if len(comp) > 1 or node in adj[node]:
+                        found.append(sorted(comp))
+            elif nxt not in index:
+                index[nxt] = low[nxt] = counter[0]; counter[0] += 1
+                stack.append(nxt); on.add(nxt)
+                work.append((nxt, iter(adj[nxt])))
+            elif nxt in on:
+                low[node] = min(low[node], index[nxt])
+    return found
+
+
+def load(root, cache: bool = True) -> dict:
+    """The graph, always from the files.
+
+    `graph.json` is an **export**, not an optimisation: FORMAT §4 lets a consumer read the
+    graph at T0 without this engine. It is written, never read back, which is what makes
+    R:CACHEAUTH structurally impossible rather than merely tested — a cache that is never
+    consulted cannot outrank the files.
+    """
+    graph = scan(root)
+    if cache:
+        try:
+            payload = {
+                "nodes": {c: (n["fm"] or {}) for c, n in graph.items()},
+                "edges": [[s, k, r, t] for s, k, r, t in edges(graph)],
+            }
+            write(Path(root) / CACHE_NAME, json.dumps(payload, indent=1, sort_keys=True) + "\n")
+        except OSError:
+            pass  # a read-only bundle is legal; the export is a convenience, never a dependency
+    return graph

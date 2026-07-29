@@ -10,6 +10,11 @@
 
 ## 2026-07-29
 
+- human:tindang · milestones/engine-core · amended A2 — A1's falsifier was a ratio between two estimates; restated as one measurable
+- human:tindang · tasks/compile-graph · gate PASS — engine and validator independently agree: 81 edges over 27 nodes
+- process:pytest · tasks/compile-graph · receipt 2 — 16/16 pass, kind test-ids, freshness content, red_first proven
+- process:pytest · tasks/compile-graph · receipt 1 — 16/16 fail on absent `scan`, the red-first record
+- claude/opus-5 · tasks/compile-graph · opened — wave 1 task 2, budget 347 lines wc -l
 - human:tindang · milestones/engine-core · amended A1 — line budget rebased into `wc -l`; 660 code lines of surface pre-booked as cuts; reserve 8 lines
 - human:tindang · tasks/port-okf-parse · gate PASS — 23 live nodes round-trip byte-identically
 - process:pytest · tasks/port-okf-parse · receipt 2 — 15/15 pass, kind test-ids, freshness content, red_first proven

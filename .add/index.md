@@ -37,6 +37,7 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 ## Tasks
 
 - [Port OKF node I/O — read tiers and surgical writes](tasks/port-okf-parse.md) — `done` · `standard` · `architecture`
+- [Compile the graph — typed edges, the fragment resolver, derived activity](tasks/compile-graph.md) — `done` · `standard` · `architecture`
 - [Define the entity model and slug rules](tasks/define-entity-model.md) — `done` · `standard`
 - [Define the task node schema](tasks/define-task-schema.md) — `done` · `standard`
 - [Define authority and evidence rules](tasks/define-authority-rules.md) — `done` · `standard` · `security`

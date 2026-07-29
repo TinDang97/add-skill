@@ -936,8 +936,8 @@ two rather than task nine. **Budget: 2,400 lines `wc -l`** — the unit of the 8
 > *code lines* while the ceiling is `wc -l`: e1 landed at 159 code (88% of its 180) and 245 total
 > (136%). The estimates were fine; the units were not. Across twelve tasks that mismatch was worth
 > **1,337 lines**. The rebase above re-derives every budget in the ceiling's own unit, pre-books
-> 660 code lines of cuts (`--locate`, `--graph`, `status --since`, `doctor` reusing the validator,
-> and six others), and budgets verb modules at 0.75 code/total against e1's 0.65. **D-6 held: the
+> 660 code lines of cuts (`--locate`, `--graph`, `status --since`, `doctor` running over e2's
+> compiled graph instead of a second scan, and six others), and budgets verb modules at 0.75 code/total against e1's 0.65. **D-6 held: the
 > ceiling did not move.** ⚠ if wave 2 lands at 0.65 density the plan is 322 over and a verb must go
 > — a D-2 change, decided on `e2`'s evidence, not now.
 
