@@ -218,6 +218,12 @@ def append_item(raw: str, key: str, item: str) -> str:
     n = _key_line(raw, key)
     if n < 0:
         return raw + f"\n{key}:\n  - {item}"
+    # An inline empty list (`verified: []`) becomes a block list on first append. Without
+    # this the item lands under a surviving `[]` and parses back as empty — found by e4,
+    # because e1's suite only ever appended to a list that already had items.
+    head = _strip_comment(lines[n])
+    if head.partition(":")[2].strip() == "[]":
+        lines[n] = f"{key}:" + lines[n][len(head):]
     last, indent = n, "  "
     for i in range(n + 1, len(lines)):
         body = _strip_comment(lines[i])
@@ -502,3 +508,147 @@ def init(root, profile: str = "code", title: str = None) -> tuple:
     note = (f"created {len(created)} files ({profile} profile)" if created
             else "bundle already exists — nothing written")
     return load(root), created, f"{note}\nnext: add new milestone <slug>"
+
+
+# ============================================== new · freeze · done — transitions (e4)
+#
+# One shared write path (`_transition`) serves all three verbs, per amendment A1. Two rules
+# decide the shape:
+#
+# * **A notary refuses to forge, never to record.** `done` will not CREATE a `status: done`
+#   that no gate stamp entitles — signing an unsigned document is not notarising it. But it
+#   never prevents a human from writing their own stamp with their own authority. That is
+#   the line between law 3's notary and the guard it forbids.
+# * **Authority is computed, never passed.** A caller cannot argue its way below the floor,
+#   because the floor is derived from the node and the index, not from an argument.
+
+AUTHORITY_ORDER = ("process", "ai-verify", "plan", "human")
+SENSITIVITY_FLOOR = {
+    "mechanical": "process",
+    "data": "plan",
+    "architecture": "plan",
+    "security": "human",
+}
+TYPE_DIR = {"Task": "tasks", "Milestone": "milestones", "Spec": "specs",
+            "Persona": "personas", "Prompt": "prompts", "Run": "runs"}
+BODIES = {
+    "Task": "## CARD\ngoal: <one line>\nbeat: direction · next: add freeze {slug}\n\n"
+            "## RULES\n<must>\n- M1 <the rule that must hold>\n</must>\n<reject>\n"
+            "- R:<NAME> <what must never happen> -> \"<NAME>\"\n</reject>\n\n"
+            "## PLAN\ncontract: <the shape this publishes>\nscope: <files>\n\n"
+            "## CHECKS\n- <test_name> · covers: M1 · <what it proves>\nred-first: every check MUST fail first.\n\n"
+            "## EVIDENCE\nreceipt: <runs/<n>.md>\ngate: <PASS | RISK-ACCEPTED | HARD-STOP>\n\n"
+            "## LESSONS\n- <lesson> -> add learn <lens>\n",
+    "Milestone": "## CARD\ngoal: <one line>\nnext: add new task <slug>\n\n## SCOPE\nIn:  <what>\nOut: <what not>\n\n"
+                 "## GROUND\ntouches: <paths>\nrisks:\n  - <the one that would hurt>\n\n"
+                 "## EXIT\n- [ ] <criterion>   (← <task>)\n\n## CLOSE\nevidence: <one row per task>\n",
+}
+
+
+def authority_for(graph: dict, cid: str) -> str:
+    """`max(sensitivity floor, A17 sensitive-path floor)` — FORMAT §3.1.
+
+    A17 is a path match against `index.md`'s `sensitive_paths:`, so a notary may perform it:
+    it is mechanical, and it outranks the declared `sensitivity:` in one direction only.
+    """
+    import fnmatch
+    node = graph.get(cid) or {}
+    fm = node.get("fm") or {}
+    floor = SENSITIVITY_FLOOR.get(fm.get("sensitivity"), "process")
+
+    patterns = ((graph.get("/index.md", {}).get("fm") or {}).get("sensitive_paths")) or []
+    scope = fm.get("scope") or []
+    for entry in (scope if isinstance(scope, list) else [scope]):
+        for pattern in (patterns if isinstance(patterns, list) else [patterns]):
+            if fnmatch.fnmatch(str(entry), str(pattern)) or str(entry).startswith(
+                    str(pattern).replace("**", "").replace("*", "").rstrip("/")):
+                return "human"  # A17 — unstrikeable, and never lowered
+    return floor
+
+
+def _transition(root, cid: str, sets: dict = None, appends: list = None) -> tuple:
+    """The one write path. Surgical edits on RAW text, then an atomic replace."""
+    path = Path(root) / cid.lstrip("/")
+    if not path.is_file():
+        return None, f"no such node: {cid}"
+    node = read(path, "T2")
+    raw = node["raw"]
+    for key, value in (sets or {}).items():
+        raw = set_key(raw, key, value)
+    for key, item in (appends or []):
+        raw = append_item(raw, key, item)
+    write(path, f"---\n{raw}\n---\n{node['body']}")
+    return read(path, "T0"), ""
+
+
+def new(root, node_type: str, slug: str, **fields) -> tuple:
+    """Create a typed node. A colliding slug reports and writes nothing (R:DUPSLUG)."""
+    root = Path(root)
+    rel = f"{TYPE_DIR.get(node_type, 'tasks')}/{slug}.md"
+    path = root / rel
+    if path.exists():
+        return None, f"slug already taken: {slug} ({rel})\nnext: pick another slug, or `add status` to see it"
+
+    order = ["type", "title", "goal", "status", "depth", "kind", "sensitivity", "milestone", "scope"]
+    fm = {"type": node_type, "title": fields.pop("title", slug), "status": "direction"}
+    fm.update({k: v for k, v in fields.items() if v is not None})
+    lines = []
+    for key in order + [k for k in fm if k not in order]:
+        if key not in fm:
+            continue
+        value = fm[key]
+        if isinstance(value, list):
+            lines.append(f"{key}:\n" + "\n".join(f"  - {v}" for v in value))
+        else:
+            lines.append(f"{key}: {value}")
+    lines += [_stamp(), "verified: []"]
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    write(path, "---\n" + "\n".join(lines) + "\n---\n" + BODIES.get(node_type, "## CARD\ngoal: <one line>\n"))
+    return "/" + rel, f"created {rel}\nnext: add freeze {slug}"
+
+
+def freeze(root, cid: str, by: str, authority: str = None) -> tuple:
+    """Append a freeze stamp. A second freeze REFREEZES — §3.5, history is append-only."""
+    graph = scan(root)
+    authority = authority or authority_for(graph, cid)
+    stamps = ((graph.get(cid) or {}).get("fm") or {}).get("verified") or []
+    act = "refreeze" if any(s.get("act") in ("freeze", "refreeze") for s in stamps
+                            if isinstance(s, dict)) else "freeze"
+    node, err = _transition(root, cid, appends=[
+        ("verified", f'{{ by: "{by}", at: {_today()}, act: {act}, authority: {authority} }}')])
+    if err:
+        return None, err + "\nnext: add status"
+    return node, f"{act} recorded at authority `{authority}`\nnext: build, then `add run -- <cmd>`"
+
+
+def done(root, cid: str) -> tuple:
+    """Transition to `done` only when a gate stamp entitles it.
+
+    Refusing to create an unsupported record is the notary's duty, not guarding: this never
+    prevents a human from writing the stamp themselves with their own authority.
+    """
+    graph = scan(root)
+    node = graph.get(cid)
+    if node is None:
+        return False, ["node"], f"no such node: {cid}\nnext: add status"
+
+    required = authority_for(graph, cid)
+    stamps = [s for s in ((node["fm"] or {}).get("verified") or []) if isinstance(s, dict)]
+    gates = [s for s in stamps if s.get("act") == "gate"]
+    entitled = [s for s in gates
+                if AUTHORITY_ORDER.index(str(s.get("authority", "process"))) >=
+                AUTHORITY_ORDER.index(required)]
+
+    missing = []
+    if not gates:
+        missing.append(f"a gate stamp (none recorded; `{required}` or above is required)")
+    elif not entitled:
+        missing.append(f"a gate at authority `{required}` — highest recorded is "
+                       f"`{max(gates, key=lambda s: AUTHORITY_ORDER.index(str(s.get('authority', 'process')))).get('authority')}`")
+    if missing:
+        return False, missing, ("cannot record `done` — " + "; ".join(missing) +
+                                f"\nnext: add gate {cid.rsplit('/', 1)[-1][:-3]}")
+
+    _transition(root, cid, sets={"status": "done"})
+    return True, [], f"{cid} is done\nnext: add status"

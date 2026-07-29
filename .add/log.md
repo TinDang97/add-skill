@@ -10,6 +10,11 @@
 
 ## 2026-07-29
 
+- human:tindang · tasks/build-node-verbs · gate PASS — stamped BY THE ENGINE; first transition ADD 3.0 wrote against its own bundle
+- process:pytest · tasks/build-node-verbs · receipt 2 — 15/15 pass, kind test-ids, freshness content, red_first proven
+- process:pytest · tasks/build-node-verbs · receipt 1 — 14/14 fail on absent `new`, the red-first record
+- claude/opus-5 · add/scripts/add.py · fixed a silent e1 defect: append_item lost every stamp appended to an inline empty list
+- claude/opus-5 · tasks/build-node-verbs · opened — wave 2, budget 320 lines wc -l
 - human:tindang · milestones/engine-core · amended A3 — restored --locate/--graph/--since into e6; invariant restated as consumed + remaining ≤ 2400
 - human:tindang · tasks/build-init-profiles · gate PASS — init's output accepted by the M0 oracle at 0 errors, unedited
 - process:pytest · tasks/build-init-profiles · receipt 2 — 8/8 pass, kind test-ids, freshness content, red_first proven

@@ -33,8 +33,8 @@ verified: []
 ## CARD
 goal: ten verbs, ≤2,400 lines, stdlib only, shipped inside the skill — and dogfooded here
 shape: five waves; each wave's line budget is asserted in CI so overflow shows at wave one
-state: wave 2 — e3 gated PASS (39 checks total) · engine 504/2400 · projected 2338/2400, slack 62
-next: e4 `node verbs` (320) ∥ e6 `status` (407 after A3 restored the UX flags)
+state: wave 2 — e3 ∥ e4 gated PASS (54 checks) · engine 654/2400 · projected 2168/2400, slack 232
+next: e6 `status` (407) — the last of wave 2, and the verb that renders what e4 left stale
 
 ## SCOPE
 In:  `add/scripts/add.py` (the engine) · its templates, profiles and method personas ·
