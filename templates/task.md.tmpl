@@ -1,0 +1,55 @@
+---
+type: Task
+title: {{title}}
+goal: {{goal}}
+status: todo
+depth: {{depth}}
+kind: {{kind}}
+sensitivity: {{sensitivity}}
+{{#milestone}}milestone: {{milestone}}
+{{/milestone}}depends_on: []
+needs: []
+gives: []
+scope:
+  - <path or glob this task may touch — the freshness set>
+generated: { by: {{engine}}, at: {{now}} }
+verified: []
+---
+## CARD
+goal: {{goal}}
+gives: <the one interface this node publishes — frozen at freeze>
+scope: <paths / tokens this task may touch>
+beat: direction · next: <the single next action>
+
+{{#standard}}## RULES
+<must>
+- M1 <required behavior>
+</must>
+<reject>
+- R:<CODE> <bad input or situation> -> "<CODE>"
+</reject>
+<after>
+- <what is true once this succeeds>
+</after>
+⚠ <the ONE assumption most likely to be wrong — if wrong: <cost>>
+
+## PLAN
+contract: <the shape behind `gives:` — request/response, signature, or file effect>
+strategy: <algorithm · failure handling · rollback>
+scope: <paths / tokens — checked mechanically before the gate>
+floor: <regression floor — or "none — greenfield">
+least-sure: [rules|contract|checks] <the part surfaced at freeze>
+
+{{/standard}}## CHECKS
+- test_<name> · covers: M1 · <arrange / act / assert, one line>
+- test_<name> · covers: R:<CODE> · <arrange / act / assert, one line>
+red-first: every check above MUST fail for the right reason before BUILD.
+
+## EVIDENCE
+receipt: <tasks/{{slug}}.d/runs/<n>.md>
+gate: <PASS | RISK-ACCEPTED | HARD-STOP>
+scope-check: <files touched vs `scope:` — match, or deviation + why>
+
+{{#standard}}## LESSONS
+- <lesson> -> add learn <domain|system|experience|quality|method>
+{{/standard}}

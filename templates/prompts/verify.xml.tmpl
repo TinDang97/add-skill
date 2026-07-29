@@ -1,0 +1,33 @@
+---
+type: Prompt
+title: Verify beat
+fills: [id, slug, depth, persona, sensitivity, authority, scope]
+generated: { by: {{engine}}, at: {{now}} }
+---
+<task id="{{id}}" phase="verify" depth="{{depth}}">
+  <objective>decide whether the receipt EARNS the gate — green is a claim until refuted</objective>
+
+  <persona ref="{{persona}}" inject="frontmatter"/>
+
+  <context>
+    <section id="{{id}}#checks"/>
+    <section id="{{id}}#evidence"/>
+    <ref id="specs/quality#decisions-that-bind"/>
+  </context>
+
+  <refute><!-- try to kill the green; a cheap kill-test skipped here is the cardinal sin -->
+    is the receipt FRESH — newer than every file in `scope:`?
+    was any check weakened, skipped, or made true without implementing the behavior?
+    did any file outside scope: {{scope}} change?
+    what evidence would prove this wrong — and did I actually look for it?
+    which Must or Reject is covered by a check that would pass even if the behavior regressed?
+  </refute>
+
+  <constraints>
+    a SECURITY finding is HARD-STOP, always
+    sensitivity: {{sensitivity}} pins the minimum gate authority to {{authority}}
+    report the weakest link in the delivery, not in private reasoning
+  </constraints>
+
+  <close>add gate {{slug}} &lt;PASS | RISK-ACCEPTED | HARD-STOP&gt;</close>
+</task>

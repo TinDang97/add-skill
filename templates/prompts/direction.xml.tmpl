@@ -1,0 +1,39 @@
+---
+type: Prompt
+title: Direction beat
+fills: [id, slug, goal, depth, persona, milestone, depends_on, needs, actor, authority]
+generated: { by: {{engine}}, at: {{now}} }
+---
+<task id="{{id}}" phase="direction" depth="{{depth}}">
+  <objective>{{goal}}</objective>
+
+  <persona ref="{{persona}}" inject="frontmatter"/>
+  <!-- adopt its Identity, apply its Critical Rules as build limits,
+       clear its Success Metrics before calling anything done -->
+
+  <context><!-- refs resolve at brief time; a spec edit re-scopes this with no prompt edit -->
+    <ref id="specs/domain#decisions-that-bind"/>
+    <ref id="specs/system#decisions-that-bind"/>
+    {{#milestone}}<ref id="{{milestone}}#ground"/>{{/milestone}}
+    {{#each depends_on}}<card id="{{this}}"/>{{/each}}
+    {{#each needs}}<ref id="{{this}}" frozen="true"/>{{/each}}
+  </context>
+
+  <deliver>
+    <section name="RULES">Must · Reject · After, plus the ONE riskiest assumption and its cost</section>
+    <section name="PLAN">contract shape (becomes `gives:`) · strategy · scope tokens · regression floor</section>
+    <section name="CHECKS">one check per Must and per Reject, each carrying `covers:`</section>
+  </deliver>
+
+  <constraints>
+    compose the whole bundle in ONE draft — no per-section narration
+    a Must or Reject encoded in no check means RULES is not understood — stop and say so
+    minor behaviors are build guidance, not gated checks
+    project RULES from the milestone GROUND — do not re-ground the repo
+  </constraints>
+
+  <close>
+    run the checks RED for the right reason, then:
+    add freeze {{slug}} --by "{{actor}}" --authority {{authority}}
+  </close>
+</task>

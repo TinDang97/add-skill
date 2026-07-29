@@ -1,0 +1,12 @@
+# derived cache — rebuilt by `add sync`, never authoritative, never committed
+.add/graph.json
+
+__pycache__/
+.pytest_cache/
+*.py[cod]
+.venv/
+dist/
+build/
+*.egg-info/
+.serena/
+tmp/

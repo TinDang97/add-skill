@@ -1,0 +1,33 @@
+---
+type: Prompt
+title: Build beat
+fills: [id, slug, depth, persona, needs, scope, test_cmd]
+generated: { by: {{engine}}, at: {{now}} }
+---
+<task id="{{id}}" phase="build" depth="{{depth}}">
+  <objective>every check in CHECKS is green — and nothing outside `scope:` changed</objective>
+
+  <persona ref="{{persona}}" inject="frontmatter"/>
+
+  <context>
+    <ref id="{{id}}#gives" frozen="true"/>
+    <section id="{{id}}#checks"/>
+    <section id="{{id}}#plan"/>
+    {{#each needs}}<ref id="{{this}}" frozen="true"/>{{/each}}
+  </context>
+
+  <constraints>
+    NEVER weaken, skip, delete, or trivially satisfy a check
+    NEVER edit a frozen `gives:` — a genuine need is a change request back to direction
+    stay inside scope: {{scope}} — before the gate, list the files actually touched
+      and check each against the tokens mechanically
+    batch edits so each batch is reviewable in full
+    a failing check OUTSIDE this suite: `add locate` first, do not widen scope
+  </constraints>
+
+  <evidence require="run-receipt">
+    add run -- {{test_cmd}}
+  </evidence>
+
+  <close>add gate {{slug}} PASS</close>
+</task>

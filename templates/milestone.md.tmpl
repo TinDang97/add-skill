@@ -1,0 +1,44 @@
+---
+type: Milestone
+title: {{title}}
+goal: {{goal}}
+status: queued
+stage: {{stage}}
+depth: {{depth}}
+tasks: []
+depends_on: []
+generated: { by: {{engine}}, at: {{now}} }
+ratified: []
+amended: []                   # { by, at, authority, reason } — a scope change (A21)
+verified: []
+---
+## CARD
+goal: {{goal}}
+shape: <the wave in one line — what ships together and why>
+state: <n queued · n active · n done>
+next: <the single next action>
+
+## SCOPE
+In:  <what this milestone delivers>
+Out: <explicitly deferred — the anti-scope-creep list>
+
+## GROUND
+touches: <shared files / symbols every task here lands in — gathered ONCE>
+anchors: <shared symbols tasks may cite — the floor each contract builds on>
+honors: <the `Decisions that bind` lines every task must honor>
+risks: <traps in the shared ground that feed each task's RULES>
+
+## EXIT
+- [ ] <observable outcome — the SEEN behavior, not a plan line>   (← <t-slug>)
+
+{{#deep}}## STRATEGY
+approach: <risk-first | dependency-first | first-slice-unblocks — and why>
+freeze-first: <the shared or risky contract frozen before the rest>
+waves: <task slugs that can run concurrently behind frozen contracts — or "sequential">
+tradeoffs: <alternative decompositions considered, and why this one>
+
+{{/deep}}## CLOSE
+evidence: <one row per task — <t-slug>: gate=<outcome> · checks=<n green> · residue=<none|note>>
+census: <engine calls · briefs compiled and their bytes · receipts · human approvals · gates by outcome>   (A18)
+log: <the rotated `## YYYY-MM-DD` groups from log.md fold in here>                                          (A4)
+goal met: <restate the goal, and the one evidence line that proves the ship meets it>
