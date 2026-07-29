@@ -10,6 +10,13 @@
 
 ## 2026-07-29
 
+- claude/opus-5 · milestones/engine-core · seven remaining M1 task nodes created BY THE ENGINE; the DAG resolves with no unresolved edges
+- claude/opus-5 · milestones/engine-core · F1 recorded — FORMAT §6.1 says `R:<CODE>`, the validator encodes `R:[A-Z_]+`; left open, not fixed inline
+- claude/opus-5 · tasks/port-okf-parse, tasks/build-orient · CARD drift repaired by `render_card` — one line each
+- human:tindang · tasks/build-orient · gate PASS — stamped by the engine; all three A3-restored flags working on the live bundle
+- process:pytest · tasks/build-orient · receipt 2 — 17/17 pass, kind test-ids, freshness content, red_first proven
+- process:pytest · tasks/build-orient · receipt 1 — 15/15 fail on absent `status`, the red-first record
+- claude/opus-5 · tasks/build-orient · opened — wave 2, budget 407 lines wc -l
 - human:tindang · tasks/build-node-verbs · gate PASS — stamped BY THE ENGINE; first transition ADD 3.0 wrote against its own bundle
 - process:pytest · tasks/build-node-verbs · receipt 2 — 15/15 pass, kind test-ids, freshness content, red_first proven
 - process:pytest · tasks/build-node-verbs · receipt 1 — 14/14 fail on absent `new`, the red-first record

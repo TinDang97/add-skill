@@ -33,8 +33,8 @@ verified: []
 ## CARD
 goal: ten verbs, ≤2,400 lines, stdlib only, shipped inside the skill — and dogfooded here
 shape: five waves; each wave's line budget is asserted in CI so overflow shows at wave one
-state: wave 2 — e3 ∥ e4 gated PASS (54 checks) · engine 654/2400 · projected 2168/2400, slack 232
-next: e6 `status` (407) — the last of wave 2, and the verb that renders what e4 left stale
+state: wave 2 CLOSED — e1–e4, e6 gated PASS (89 checks) · engine 812/2400 · projected 1919/2400, slack 481
+next: wave 3 — e5 `brief` (267) ∥ e7 `receipts+learn` (240). All 12 M1 nodes now exist; the DAG resolves
 
 ## SCOPE
 In:  `add/scripts/add.py` (the engine) · its templates, profiles and method personas ·
@@ -51,6 +51,13 @@ anchors: FORMAT.md is frozen at v1.3-draft and the engine compiles against it, n
 honors: specs/system#decisions-that-bind (notary not guard · atomic single-file replace ·
   records but never executes · no undo, git is the log · every verb ends with `next:`) ·
   specs/method#decisions-that-bind (depth dial, authority ladder, T2 is single-node)
+findings:
+  - **F1 · spec/implementation mismatch, unresolved by design.** FORMAT §6.1 states the
+    `covers:` grammar as `R:<CODE>`; `scripts/validate_bundle.py` encodes `R:[A-Z_]+`, which
+    excludes digits. So `R:T2SCAN`, `R:T2FANOUT` and `R:MTIME2` raise `covers_referent` info
+    while conforming to what the format actually says. One of the two is wrong. Left OPEN
+    rather than fixed inline: both files are sensitive paths, and widening a grammar so the
+    author's own nodes pass is the move A17 exists to prevent. Needs its own gated task
 risks:
   - **A22 is specified, not implemented.** `e7` owes the content digest. Until then no
     receipt this engine writes can be trusted fresh across a checkout — the exact defect

@@ -40,6 +40,14 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 - [Compile the graph — typed edges, the fragment resolver, derived activity](tasks/compile-graph.md) — `done` · `standard` · `architecture`
 - [init — create a bundle from a profile](tasks/build-init-profiles.md) — `done` · `standard` · `architecture`
 - [new · freeze · done — the node transitions](tasks/build-node-verbs.md) — `done` · `standard` · `security`
+- [status — orientation, and the three flags A3 restored](tasks/build-orient.md) — `done` · `standard` · `architecture`
+- [brief — compile a task's context, and nothing else](tasks/build-brief-compiler.md) — `direction` · `standard`
+- [run · learn — receipts, and the content-addressed freshness A22 owes](tasks/build-receipts-learn.md) — `direction` · `standard` · `security`
+- [the covers: binding — a check that proves a rule, or says it cannot](tasks/build-evidence-binding.md) — `direction` · `standard` · `security`
+- [doctor — conformance and repair over the compiled graph](tasks/build-doctor.md) — `direction` · `standard`
+- [the next: line — one affordance, every verb](tasks/build-hints-layer.md) — `direction` · `standard` · `mechanical`
+- [durability — CI, the budget assertion, and the failure modes](tasks/build-durability.md) — `direction` · `standard`
+- [package the engine inside the skill directory](tasks/package-in-skill.md) — `direction` · `standard`
 - [Define the entity model and slug rules](tasks/define-entity-model.md) — `done` · `standard`
 - [Define the task node schema](tasks/define-task-schema.md) — `done` · `standard`
 - [Define authority and evidence rules](tasks/define-authority-rules.md) — `done` · `standard` · `security`

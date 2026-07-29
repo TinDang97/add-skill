@@ -32,7 +32,7 @@ verified:
 goal: read a node at a declared tier; change one key without touching any other byte
 gives: parse · read(tier) · set_key/append_item · atomic write
 scope: add/scripts/add.py · tests/engine/test_node_io.py
-beat: build · next: make the red suite green, then `add run -- pytest`
+beat: done · next: make the red suite green, then `add run -- pytest`
 
 ## RULES
 <must>

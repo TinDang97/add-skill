@@ -652,3 +652,161 @@ def done(root, cid: str) -> tuple:
 
     _transition(root, cid, sets={"status": "done"})
     return True, [], f"{cid} is done\nnext: add status"
+
+
+# ================================================ status — orientation and its flags (e6)
+#
+# Everything here reads e2's compiled graph; no verb walks the tree. Three rules bind:
+#
+# * **Bounded, always** (A12). Output must not grow with the bundle: 20 node lines and a
+#   count. A report that becomes a context hazard defeats the format it reports on.
+# * **Stamps, never mtime** (A22). The M0 kill-test proved mtime worthless across a
+#   checkout, so `--since` reads recorded acts.
+# * **Report, never block** (law 3). The one write here is `render_card`, and it repairs
+#   the contradiction e4's transition created rather than displaying it as current.
+
+MAX_LINES = 20
+BEAT_KEYS = ("beat", "state")
+# What a cold reader needs, in order. `Run` is absent on purpose — see `status`.
+ORIENT_RANK = {"Project": 0, "Milestone": 1, "Task": 2, "Spec": 5, "Persona": 6, "Prompt": 7}
+
+
+def locate(graph: dict, term: str) -> list:
+    """Cids whose slug or title contains `term`. A human should never need a path."""
+    term = term.lower()
+    return sorted(cid for cid, n in graph.items()
+                  if term in cid.rsplit("/", 1)[-1][:-3].lower()
+                  or term in str((n["fm"] or {}).get("title", "")).lower())
+
+
+def graph_lines(graph: dict, milestone_cid: str) -> list:
+    """The DAG for ONE milestone. Never whole-bundle — that is the A12 hazard."""
+    node = graph.get(milestone_cid)
+    if node is None:
+        return [f"no such milestone: {milestone_cid}"]
+    members = list((node["fm"] or {}).get("tasks") or [])
+    # A task may be listed by the milestone, or may name the milestone itself. Honour both:
+    # `new` writes the back-reference, so a graph that read only `tasks:` would show nothing.
+    members += [c for c, n in graph.items()
+                if (n["fm"] or {}).get("milestone") == milestone_cid and c not in members]
+    out = [f"{milestone_cid}  {(node['fm'] or {}).get('title', '')}"]
+    for ref in sorted(set(str(m) for m in members)):
+        cid = _norm(milestone_cid, str(ref))
+        task = graph.get(cid)
+        if task is None:
+            out.append(f"  ? {ref}  (unresolved)")
+            continue
+        fm = task["fm"] or {}
+        deps = [str(d).rsplit("/", 1)[-1][:-3] for d in (fm.get("depends_on") or [])]
+        out.append(f"  {'x' if fm.get('status') == 'done' else 'o'} {cid.rsplit('/', 1)[-1][:-3]}"
+                   f"  [{fm.get('status', '?')}]" + (f"  <- {', '.join(deps)}" if deps else ""))
+    return out
+
+
+def since(graph: dict, date: str) -> list:
+    """`[(at, cid, act, by)]` from `verified[]` — recorded acts, never file mtimes (A22)."""
+    rows = []
+    for cid, node in graph.items():
+        for stamp in ((node["fm"] or {}).get("verified") or []):
+            if isinstance(stamp, dict) and str(stamp.get("at", "")) >= date:
+                rows.append((str(stamp.get("at")), cid, stamp.get("act"), stamp.get("by")))
+    return sorted(rows, reverse=True)
+
+
+def card_drift(graph: dict) -> list:
+    """Nodes whose `## CARD` contradicts frontmatter — the defect e4's transition created.
+
+    `[(cid, key, card_says, fm_says)]`. Reporting it is the notary's job; `render_card`
+    repairs it.
+    """
+    out = []
+    for cid, node in graph.items():
+        status = (node["fm"] or {}).get("status")
+        if not status:
+            continue
+        card = card_of(read(node["path"], "T2")["body"])
+        for line in card.splitlines():
+            key, sep, value = line.partition(":")
+            if sep and key.strip() in BEAT_KEYS:
+                said = value.split("·")[0].strip()
+                if said and said != status and said in ("direction", "build", "verify", "done"):
+                    out.append((cid, key.strip(), said, status))
+    return out
+
+
+def render_card(root, cid: str) -> tuple:
+    """Repair a stale CARD beat line. Surgical: exactly one line changes, or none."""
+    graph = scan(root)
+    drift = [d for d in card_drift(graph) if d[0] == cid]
+    if not drift:
+        return False, "card is current"
+    _, key, said, status = drift[0]
+    path = Path(root) / cid.lstrip("/")
+    node = read(path, "T2")
+    lines = node["body"].splitlines(keepends=True)
+    for i, line in enumerate(lines):
+        if line.startswith(f"{key}:") and said in line:
+            lines[i] = line.replace(said, status, 1)
+            break
+    write(path, f"---\n{node['raw']}\n---\n{''.join(lines)}")
+    return True, f"{cid}: {key} {said} -> {status}\nnext: add status"
+
+
+def status(root, locate_term: str = None, milestone: str = None,
+           since_date: str = None, all: bool = False, check: bool = False) -> str:
+    """One bounded orientation report, ending in a runnable `next:` line.
+
+    `check=True` adds the CARD-drift scan. It is OPT-IN because detecting drift requires
+    reading every node's CARD, and M1 holds this verb to T0. Orientation must stay cheap;
+    the deeper pass belongs to `doctor --sync`.
+    """
+    graph = scan(root)
+    out = []
+
+    if locate_term:
+        found = locate(graph, locate_term)
+        out += [f"· {c}" for c in found[:MAX_LINES]] or ["no match"]
+        return "\n".join(out + [f"next: add status --graph <milestone>"])
+    if milestone:
+        return "\n".join(graph_lines(graph, milestone) + ["next: add status"])
+    if since_date:
+        rows = since(graph, since_date)
+        out += [f"· {at}  {cid}  {act} by {by}" for at, cid, act, by in rows[:MAX_LINES]]
+        return "\n".join((out or [f"nothing recorded since {since_date}"]) + ["next: add status"])
+
+    project = next((n for n in graph.values() if (n["fm"] or {}).get("type") == "Project"), None)
+    out.append(f"{((project or {}).get('fm') or {}).get('title', Path(root).name)}"
+               f"  ·  {len(graph)} nodes")
+
+    # Orientation is about WORK. Receipts are evidence — reachable from the task that owns
+    # them, and never the thing a cold reader needs first. Ordering by ORIENT_RANK keeps the
+    # 20-line budget spent on milestones and tasks rather than on files named `1.md`.
+    def keep(cid):
+        fm = graph[cid]["fm"] or {}
+        if fm.get("type") == "Run":
+            return False
+        return all or fm.get("status") not in ("done", "dropped")
+
+    shown = sorted((c for c in graph if keep(c)),
+                   key=lambda c: (ORIENT_RANK.get((graph[c]["fm"] or {}).get("type"), 9), c))
+    for cid in shown[:MAX_LINES]:
+        fm = graph[cid]["fm"] or {}
+        out.append(f"  · {cid.rsplit('/', 1)[-1][:-3]:<28} [{fm.get('status', '—')}] {fm.get('type', '')}")
+    if len(shown) > MAX_LINES:
+        out.append(f"  … {len(shown) - MAX_LINES} more of {len(shown)} (`--all` for done nodes)")
+
+    drift = card_drift(graph) if check else []
+    if drift:
+        out.append(f"  ! {len(drift)} node(s) whose CARD contradicts frontmatter — `add doctor --sync`")
+
+    frontier = ready(graph)
+    waiting = [c for c in active(graph) if (graph[c]["fm"] or {}).get("status") == "verify"]
+    if waiting:
+        nxt = f"next: add gate {waiting[0].rsplit('/', 1)[-1][:-3]}"
+    elif frontier:
+        nxt = f"next: add brief {frontier[0].rsplit('/', 1)[-1][:-3]}"
+    elif any((n["fm"] or {}).get("type") == "Milestone" for n in graph.values()):
+        nxt = "next: add new task <slug>"
+    else:
+        nxt = "next: add new milestone <slug>"
+    return "\n".join(out + [nxt])
