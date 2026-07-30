@@ -10,6 +10,10 @@
 
 ## 2026-07-30
 
+- claude/opus-5 · milestones/engine-core · amended A4 — three tasks added from a hand-work audit: e13 gate (140) · e14 checks --sync (90) · e15 covers grammar (30). Invariant 1956/2400, slack 444
+- claude/opus-5 · tasks/build-gate-verb, compile-checks-from-suite, resolve-covers-grammar · opened BY THE ENGINE — 15 M1 tasks, DAG resolves, 52 nodes / 156 edges / 0 cycles
+- claude/opus-5 · milestones/engine-core · F5 recorded — `new` never substituted `{slug}`; every node it created carries an unrunnable `next:` hint. Assigned to e9, which already declares R:FAKEHINT
+- claude/opus-5 · milestones/engine-core · measured: 8 of 18 receipts unreachable from any stamp (44% of evidence) · 118 of 131 tests already carry covers: · all 11 gates so far hand-appended through a private function
 - claude/opus-5 · milestones/engine-core · wave 3 CLOSED — e5, e7, e12 gated PASS · 136 checks · engine 1256/2400, slack 704
 - human:tindang · tasks/build-brief-compiler · gate PASS — first measured brief costs: mean 13,658 B (~3.4k tok), max 19,221 B, 0 over budget
 - process:run · tasks/build-brief-compiler · receipt 3 — 23/23 pass, kind test-ids, freshness content. Receipt 2 went STALE by digest when the parser was fixed (A22 working)

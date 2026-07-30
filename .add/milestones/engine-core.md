@@ -20,6 +20,9 @@ tasks:
   - /tasks/build-hints-layer.md
   - /tasks/build-durability.md
   - /tasks/package-in-skill.md
+  - /tasks/build-gate-verb.md
+  - /tasks/compile-checks-from-suite.md
+  - /tasks/resolve-covers-grammar.md
 depends_on:
   - /milestones/format-standard.md
 generated: { by: claude/opus-5, at: 2026-07-29 }
@@ -28,13 +31,14 @@ amended:
   - { by: "human:tindang", at: 2026-07-29, authority: human, reason: "A1 line-budget rebase — the twelve per-task allocations were written in code lines while the 2,400 ceiling is wc -l. Re-derived in the ceiling's unit; 660 code lines of surface pre-booked as cuts. See ## AMENDMENTS" }
   - { by: "human:tindang", at: 2026-07-29, authority: human, reason: "A2 — A1's falsifier was a ratio between two estimates, so it fired at e2 while its conclusion was false. Restated as one measurable: cumulative consumed vs cumulative allocated, checked at every gate. A1 left unedited per §3.6" }
   - { by: "human:tindang", at: 2026-07-29, authority: human, reason: "A3 — restored --locate, --graph and status --since (~247 lines) into e6 after three consecutive under-runs left +301 margin; restated the invariant as consumed + remaining allocations <= 2400, because A2's was one-directional and generated no signal while winning" }
+  - { by: "human:tindang", at: 2026-07-30, authority: human, reason: "A4 — three tasks added from an audit of hand-work across waves 2 and 3: gate (never existed, though D-2 counts it in the ten and all 11 gates were hand-appended through a private function), CHECKS compiled from the suite (F2s defect class made structurally impossible), and F1s covers grammar. 260 lines allocated; invariant 1956/2400, slack 444. See ## AMENDMENTS" }
 verified: []
 ---
 ## CARD
 goal: ten verbs, ≤2,400 lines, stdlib only, shipped inside the skill — and dogfooded here
 shape: five waves; each wave's line budget is asserted in CI so overflow shows at wave one
-state: wave 3 CLOSED — e5, e7, e12 gated PASS (136 checks) · engine 1256/2400 · projected 1696/2400, slack 704
-next: wave 4 — e8 `doctor` (200), which owes F3's stamp check and F2's covers-resolves check
+state: wave 3 CLOSED — e5, e7, e12 gated PASS (136 checks) · engine 1256/2400 · projected 1956/2400, slack 444
+next: A4 added e13 `gate` (140) ∥ e14 `checks --sync` (90) ∥ e15 `covers grammar` (30). 15 tasks now
 
 ## SCOPE
 In:  `add/scripts/add.py` (the engine) · its templates, profiles and method personas ·
@@ -116,6 +120,15 @@ findings:
     raw text must reach its parsed dict — which is the cheapest strong oracle this project has
     added, and would have caught all three. A deliberate parser audit was considered and NOT
     taken: the missing oracle was the actual defect, and it is now in place
+  - **F5 · `new` has never substituted its template placeholder — found 2026-07-30.** `add.py`
+    writes `BODIES` without `.format(slug=slug)`, so every node `new` has ever created carries a
+    literal `{slug}` in its CARD `next:` line — a hint that would fail if run, which is R:FAKEHINT
+    and a law-4 violation in the verb whose whole job is to teach the next command. It survived
+    e4's 15 checks and a human gate because those asserted the node was created and parseable,
+    never that its hint was runnable. I hand-wrote the real slug into all twelve M1 nodes while
+    filling their CARDs and never noticed the cause. **Assigned to `e9 build-hints-layer`**, which
+    already declares `R:FAKEHINT` and `test_hint_is_runnable` — the check was planned before the
+    defect was found, which is the one encouraging thing about it
 risks:
   - ~~**A22 is specified, not implemented.**~~ **RETIRED at e7, 2026-07-30.** `scope_digest`
     hashes git blobs over `scope:`; the M0 kill-test was run in reverse — `git worktree add`
@@ -246,6 +259,32 @@ allocation makes the trigger recede. Restated:
 
 D-6 untouched: the ceiling still has not moved. What moved is which side of it we can see.
 
+### A4 · 2026-07-30 · three tasks added from a hand-work audit (human:tindang)
+**What was audited.** Every action taken by hand across waves 2 and 3, against what the format says
+is compiled and what D-2 says the engine does. Most of it was already planned: the CLI is `e11`'s
+M2, and `index.md`/`log.md`/CARD compilation is `e8`'s `--sync`. Three things had **no owner**:
+
+| gap | measured | new task | code |
+|---|---|---|---:|
+| `gate` does not exist as a verb, though D-2 counts it in the ten | all 11 gates so far were hand-appended through the private `_transition`; none of its 3 specified refusals ran | `build-gate-verb` | 140 |
+| `run` writes a receipt no stamp points at (F3) | **8 of 18 receipts unreachable from the graph — 44% of all evidence** | (same task, M5) | — |
+| `done` is not §3d's one-call quick lane | the lane the ceremony budget is measured against does not exist | (same task, M6) | — |
+| CHECKS is authored, and F2 proved it fiction-prone | **118 of 131 tests already carry `covers:` in their docstring** | `compile-checks-from-suite` | 90 |
+| F1 open since M0 — two documents, two grammars | 7 `covers_referent` info lines | `resolve-covers-grammar` | 30 |
+
+**The invariant, recomputed** (A3): consumed 1,256 + remaining 700 (e8 200 · e9 80 · e10 80 ·
+e11 80 · e13 140 · e14 90 · e15 30) = **1,956 / 2,400 — slack 444.** D-6 untouched: the ceiling has
+still never moved.
+
+**Why `build-gate-verb` matters more than its line count suggests.** e12's M3 says "`unbound` is
+part of every gate's report". That rule was gated PASS while no gate report existed — it could not
+have been true. The rule was not wrong; it had nowhere to land. This task is where it lands, and
+until then every PASS in this project was recorded without the refusal that was supposed to guard it.
+
+**What was NOT added, deliberately.** A `status --bind` census flag (e12's primitives plus e6's
+report already compose it — a flag, not a task) and an `add commit-msg` compiler (it would author
+prose from a node, which is the R:HANDBRIEF mistake pointed the other way).
+
 ## STRATEGY
 approach: dependency-first — nothing can be built before the thing that reads and writes a
   node, and nothing can be reasoned about before the graph compiles
@@ -253,7 +292,12 @@ freeze-first: `port-okf-parse` publishes the node I/O contract every other verb 
   freezes before any verb is written
 waves: (1) e1 parse → e2 graph · (2) e3 init ∥ e4 node-verbs ∥ e6 status · (3) e5 brief ∥
   e7 receipts → e12 evidence · (4) e8 doctor · (5) e9 hints ∥ e10 durability ∥ e11 packaging.
-  Waves 2 and 3 are worktree-parallel — the first real use of L-E
+  A4 adds: (3b) e13 gate · (4b) e14 checks ∥ e15 grammar
+  <!-- Corrected 2026-07-30. This line read "Waves 2 and 3 are worktree-parallel — the first real
+       use of L-E". They were not: both were built sequentially in one context, so L-E has never
+       been exercised and the milestone asserted a practice the record does not support. The trial
+       is now scheduled explicitly at 4b (e15 as a worktree subagent, decided with the human at
+       wave 3's close) rather than described as already happening. -->
   <!-- Renumbered 2026-07-29: this line first read six waves (e1 and e2 separately) while
        amendment A1's table read five. Two numbering schemes for one plan is a defect, not a
        viewpoint. A1's numbering wins because it is the one CI asserts the line budget against. -->
