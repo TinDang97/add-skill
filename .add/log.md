@@ -10,6 +10,17 @@
 
 ## 2026-07-30
 
+- claude/opus-5 · milestones/engine-core · wave 3 CLOSED — e5, e7, e12 gated PASS · 136 checks · engine 1256/2400, slack 704
+- human:tindang · tasks/build-brief-compiler · gate PASS — first measured brief costs: mean 13,658 B (~3.4k tok), max 19,221 B, 0 over budget
+- process:run · tasks/build-brief-compiler · receipt 3 — 23/23 pass, kind test-ids, freshness content. Receipt 2 went STALE by digest when the parser was fixed (A22 working)
+- claude/opus-5 · add/scripts/add.py · `_open_quote` — the quote-COUNT fix had swallowed budget/generated/verified across 25 nodes with 134 green and CONFORMS; caught by `done` refusing a transition it could not entitle
+- claude/opus-5 · milestones/engine-core · F4 recorded — three silent e1 parser defects; the missing oracle was read fidelity, now closed by `test_live_bundle_keys_all_parse`
+- claude/opus-5 · add/scripts/add.py · fixed a silent e1 defect live since e2: a wrapped quoted list item was truncated and kept its opening quote — found by RENDERING a `gives:` into a brief
+- claude/opus-5 · add/scripts/add.py · fixed mangled ref ids — `#gives` compiled to `#gi`; no agent could resolve a brief's refs back
+- process:run · tasks/build-brief-compiler · receipt 1 — 19/19 fail on absent `brief`, `0/19 reported`: the red-first record
+- claude/opus-5 · tasks/build-brief-compiler · units resolved before BUILD — FORMAT §7.2 says bytes, PROPOSAL §3d says tokens; bytes enforced, tokens printed at a DECLARED 4 B/tok
+- claude/opus-5 · tasks/build-brief-compiler · CHECKS extended before freeze — M5/M6 had no check at all; 7 → 21
+- claude/opus-5 · tasks/build-brief-compiler · opened and frozen — wave 3, budget 267 lines wc -l
 - claude/opus-5 · milestones/engine-core · F3 recorded — `run` writes a receipt but never appends the stamp; all six earlier run stamps were hand-written. Assigned to e8
 - claude/opus-5 · tasks/build-evidence-binding · run stamp appended BY HAND (F3); CARD `next:` corrected by hand — `render_card` repairs only `beat:`
 - human:tindang · tasks/build-evidence-binding · gate PASS — stamped by the engine at authority `human` (A17: sensitivity security)

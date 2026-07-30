@@ -41,7 +41,7 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 - [init — create a bundle from a profile](tasks/build-init-profiles.md) — `done` · `standard` · `architecture`
 - [new · freeze · done — the node transitions](tasks/build-node-verbs.md) — `done` · `standard` · `security`
 - [status — orientation, and the three flags A3 restored](tasks/build-orient.md) — `done` · `standard` · `architecture`
-- [brief — compile a task's context, and nothing else](tasks/build-brief-compiler.md) — `direction` · `standard`
+- [brief — compile a task's context, and nothing else](tasks/build-brief-compiler.md) — `done` · `standard`
 - [run · learn — receipts, and the content-addressed freshness A22 owes](tasks/build-receipts-learn.md) — `done` · `standard` · `security`
 - [the covers: binding — a check that proves a rule, or says it cannot](tasks/build-evidence-binding.md) — `done` · `standard` · `security`
 - [doctor — conformance and repair over the compiled graph](tasks/build-doctor.md) — `direction` · `standard`

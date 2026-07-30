@@ -23,6 +23,7 @@ half-parsed into a plausible wrong value.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -93,6 +94,25 @@ def _flow_map(text: str) -> dict:
     return data
 
 
+def _open_quote(text: str) -> bool:
+    """True when `text` ends inside an unterminated quoted string.
+
+    Scanned, never counted. An apostrophe in `the node's own body` makes the single-quote count
+    odd while opening nothing, because the value is already inside double quotes. Counting
+    instead of tracking state made a continuation run to the end of the frontmatter and swallow
+    `budget`, `generated` and `verified` across 25 nodes of this bundle — with the full suite
+    green and the M0 validator reporting CONFORMS.
+    """
+    quote = None
+    for ch in text:
+        if quote:
+            if ch == quote:
+                quote = None
+        elif ch in "\"'":
+            quote = ch
+    return quote is not None
+
+
 def _tokens(raw: str) -> list[tuple[int, str]]:
     lines = []
     for line in raw.splitlines():
@@ -108,7 +128,12 @@ def _block(toks: list[tuple[int, str]], i: int, indent: int):
         items = []
         while i < len(toks) and toks[i][0] >= indent and toks[i][1].startswith("- "):
             text, i = toks[i][1][2:], i + 1
-            while text.count("{") > text.count("}") and i < len(toks):  # a wrapped flow map
+            # A list item may wrap: an unclosed flow map, or an unclosed quote. Both are
+            # continued until they balance. Without the quote arm a wrapped `"…"` was cut at
+            # the first newline and KEPT its opening quote, so the value parsed to something
+            # plausible and wrong — found by e5 rendering a `gives:` into a brief, after this
+            # had survived 132 checks, the M0 validator and five human gates.
+            while i < len(toks) and (text.count("{") > text.count("}") or _open_quote(text)):
                 text, i = text + " " + toks[i][1], i + 1
             items.append(_scalar(text))
         return items, i
@@ -1036,3 +1061,196 @@ def extract_ids(path) -> dict:
         bad = any(case.find(tag) is not None for tag in ("failure", "error"))
         out[name] = "fail" if bad else "pass"
     return out
+
+
+# ================================================== brief — refs, not prose (e5)
+#
+# One rule decides this whole verb: **T2 is single-node** (FORMAT §4). A brief carries the
+# subject's own body, T1 CARDs of its `depends_on`, the `#gives` fragments it `needs:`, and
+# the five specs' bind lines. Nothing else can leak in, because nothing else is READ.
+#
+# Two units live here and they are not the same. FORMAT §7.2 states the ceiling in BYTES;
+# PROPOSAL §3d states the lane budgets in TOKENS. The engine has no tokenizer and may not
+# acquire one (D-1, stdlib only), so bytes are enforced and tokens are printed at a DECLARED
+# ratio. A1 cost this project an amendment for exactly this class of mistake; naming the unit
+# in the output is the whole fix.
+
+BRIEF_BUDGET = {"quick": 8_000, "standard": 24_000, "deep": 40_000}
+BYTES_PER_TOKEN = 4
+PHASE_EVIDENCE = {"direction": "none", "build": "run-receipt",
+                  "verify": "run-receipt,covers-bound"}
+PHASE_OF = {"direction": "direction", "build": "build", "verify": "verify",
+            "done": "verify", "dropped": "verify"}
+
+
+def brief_budget(depth: str) -> int:
+    return BRIEF_BUDGET.get(str(depth or "standard"), BRIEF_BUDGET["standard"])
+
+
+def bind_sections(root) -> list:
+    """The five specs' `Decisions that bind`, sorted — the ONLY spec section a brief may cite.
+
+    Sorted by filename, so A16's determinism is structural: there is no dict order, no
+    `set`, and no `glob` order to depend on.
+    """
+    out = []
+    for path in sorted((Path(root) / "specs").glob("*.md")):
+        text = _section(read(path, "T2")["body"], "decisions-that-bind")
+        if text:
+            out.append((f"specs/{path.stem}", text))
+    return out
+
+
+def _flat(value) -> str:
+    """A resolved ref's value as text. A `gives:` list renders as a list, not as a repr."""
+    if isinstance(value, list):
+        return "\n".join(f"- {v}" for v in value)
+    if isinstance(value, dict):
+        return "\n".join(f"{k}: {v}" for k, v in value.items())
+    return str(value)
+
+
+def brief(root, cid: str, phase: str = None, for_subagent: bool = False,
+          evidence: list = None) -> dict:
+    """Compile the XML brief for one node. Deterministic, budgeted, and self-measuring."""
+    root = Path(root)
+    graph = scan(root)
+    node = graph.get(cid)
+    if node is None:
+        return {"text": f'<task unresolved="true" id="{cid}"/>\nnext: add status\n',
+                "bytes": 0, "hash": "", "nodes": 0, "budget": 0, "degraded": [],
+                "phase": phase or "build", "depth": "standard"}
+
+    fm = node["fm"] or {}
+    slug = cid.rsplit("/", 1)[-1][:-3]
+    ident = cid.strip("/")[:-3]
+    phase = phase or PHASE_OF.get(str(fm.get("status", "")), "build")
+    depth = str(fm.get("depth") or "standard")
+    budget = brief_budget(depth)
+    body = read(node["path"], "T2")["body"]
+
+    cards = []
+    for dep in sorted(str(d) for d in (fm.get("depends_on") or [])):
+        dcid, dnode, _ = resolve(graph, dep, cid)
+        cards.append((dcid.strip("/")[:-3], read(dnode["path"], "T1")["card"] if dnode else None))
+    refs = []
+    for need in sorted(str(n) for n in (fm.get("needs") or [])):
+        _, value, why = resolve(graph, need, cid)
+        # Strip `.md` from the PATH only. Applying it to the whole ref ate the fragment's last
+        # two characters — `#gives` became `#gi` — and a ref an agent cannot resolve back is
+        # not a reference. The suite checked the resolved value and never the id.
+        path, _, frag = need.partition("#")
+        ident_ref = path.strip("/")[:-3] if path.endswith(".md") else path.strip("/")
+        refs.append((f"{ident_ref}#{frag}" if frag else ident_ref,
+                     None if why == "edge_unresolved" else _flat(value)))
+    binds = bind_sections(root)
+
+    persona = None
+    if fm.get("persona"):
+        pcid, pnode, _ = resolve(graph, str(fm["persona"]), cid)
+        # T0 only — `raw` is the frontmatter text `scan` already holds. The body is never
+        # opened, so D-4 ("the corpus is referenced, never vendored") holds structurally
+        # rather than by a filter that could be forgotten.
+        if pnode:
+            persona = (pcid.strip("/")[:-3], pnode["raw"])
+
+    quoted = []
+    for src in (evidence or []):
+        src = Path(src)
+        try:
+            origin = str(src.relative_to(root.parent))
+        except ValueError:
+            origin = src.name          # never an absolute path: it would break A16 per machine
+        try:
+            quoted.append((origin, src.read_text()))
+        except OSError as err:
+            quoted.append((origin, f"unreadable: {err}"))
+
+    nodes = 1 + len(cards) + len(binds) + (1 if persona else 0)
+    constraints = ("never weaken a check · never edit a frozen `gives` · T2 is single-node · "
+                   f"scope: {' · '.join(str(s) for s in (fm.get('scope') or ['—']))}")
+
+    def assemble(drop_specs: bool, drop_cards: bool) -> str:
+        out = [f'<task id="{ident}" phase="{phase}" depth="{depth}"'
+               + (' standalone="true">' if for_subagent else ">"),
+               f"  <objective>{fm.get('goal') or fm.get('title') or ''}</objective>"]
+        if persona:
+            out.append(f'  <persona ref="{persona[0]}" inject="frontmatter">')
+            out += ["    " + l for l in persona[1].splitlines()]
+            out.append("  </persona>")
+        out.append("  <context>")
+        for dcid, card in cards:
+            if card is None:
+                out.append(f'    <card id="{dcid}" unresolved="true"/>')
+            elif drop_cards:
+                out.append(f'    <card id="{dcid}" omitted="budget"/>')
+            else:
+                out.append(f'    <card id="{dcid}">')
+                out += ["      " + l for l in card.splitlines()]
+                out.append("    </card>")
+        for ref, value in refs:
+            if value is None:
+                out.append(f'    <ref id="{ref}" unresolved="true"/>')
+            else:
+                out.append(f'    <ref id="{ref}" frozen="true">')
+                out += ["      " + l for l in value.splitlines()]
+                out.append("    </ref>")
+        for scid, text in binds:
+            rid = f"{scid}#decisions-that-bind"
+            if drop_specs:
+                out.append(f'    <ref id="{rid}" omitted="budget"/>')
+            else:
+                out.append(f'    <ref id="{rid}">')
+                out += ["      " + l for l in text.splitlines()]
+                out.append("    </ref>")
+        out.append("  </context>")
+        # The subject is emitted VERBATIM and unindented. R:SILENTCUT forbids trimming it, and
+        # reformatting it would be a quieter version of the same thing.
+        out.append(f'  <subject id="{ident}">')
+        out.append(body.rstrip("\n"))
+        out.append("  </subject>")
+        out.append(f"  <constraints>{constraints}</constraints>")
+        out.append(f'  <evidence require="{PHASE_EVIDENCE[phase]}"/>')
+        for origin, text in quoted:
+            # §7.5 · law L6 — outside content is DATA. It sits outside `<context>`, quoted and
+            # labelled, so it can never be read as instruction.
+            out.append(f'  <evidence origin="{origin}" trust="data">')
+            out += ["  > " + l for l in text.splitlines()]
+            out.append("  </evidence>")
+        if for_subagent:
+            out.append(f"  <close>add run {slug} -- &lt;cmd&gt; · then add gate {slug}</close>")
+        out.append("</task>")
+        return "\n".join(out) + "\n"
+
+    def finish(payload: str, degraded: list, over: bool) -> tuple:
+        # The hash covers the payload only: the cost line quotes the hash, and a hash of a
+        # string containing itself does not exist.
+        digest = "sha256:" + hashlib.sha256(payload.encode()).hexdigest()[:16]
+        tail = (f"cost: ###### B / {budget} B budget · ~##### tok / "
+                f"~{budget // BYTES_PER_TOKEN} tok (declared {BYTES_PER_TOKEN} B/tok) · "
+                f"{nodes} nodes · {digest}"
+                + ("\n  DEGRADED (A5): " + " → ".join(degraded) if degraded else "")
+                + ("\n  OVER BUDGET — reported, not truncated (R:SILENTCUT)" if over else "")
+                + f"\nnext: add run {slug} -- <cmd>   # then add gate {slug}\n")
+        # Fixed-width placeholders: the printed size includes the line printing it, so the
+        # substitution must not change the length. One pass, no fixed-point iteration.
+        size = len(payload.encode()) + len(tail.encode())
+        tail = tail.replace("######", f"{size:>6}", 1).replace("#####", f"{size // BYTES_PER_TOKEN:>5}", 1)
+        return payload + tail, size, digest
+
+    ladder = [((False, False), None),
+              ((True, False), "specs → refs"),
+              ((True, True), "dep cards → refs")]
+    degraded, text, size, digest = [], "", 0, ""
+    for flags, label in ladder:
+        if label:
+            degraded.append(label)
+        payload = assemble(*flags)
+        text, size, digest = finish(payload, degraded, False)
+        if size <= budget:
+            break
+    else:
+        text, size, digest = finish(payload, degraded, True)
+
+    return {"text": text, "bytes": size, "hash": digest, "nodes": nodes,
+            "budget": budget, "degraded": degraded, "phase": phase, "depth": depth}

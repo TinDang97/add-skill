@@ -33,8 +33,8 @@ verified: []
 ## CARD
 goal: ten verbs, ≤2,400 lines, stdlib only, shipped inside the skill — and dogfooded here
 shape: five waves; each wave's line budget is asserted in CI so overflow shows at wave one
-state: wave 3 half CLOSED — e7, e12 gated PASS (113 checks) · engine 1038/2400 · projected 1745/2400, slack 655
-next: e5 `brief` (267) closes wave 3, then wave 4 e8 `doctor` (200). F2 recorded: 67/133 rules proven
+state: wave 3 CLOSED — e5, e7, e12 gated PASS (136 checks) · engine 1256/2400 · projected 1696/2400, slack 704
+next: wave 4 — e8 `doctor` (200), which owes F3's stamp check and F2's covers-resolves check
 
 ## SCOPE
 In:  `add/scripts/add.py` (the engine) · its templates, profiles and method personas ·
@@ -93,7 +93,29 @@ findings:
     met** on the receipt→stamp link, though it reads as though it were. The fix is a few lines
     inside `run`, and it is deliberately NOT being made here: `run` is e7's contract and e7 is
     gated. Assigned to `e8 build-doctor`, which must also carry the check that catches it —
-    a task whose `verified[]` cites no receipt while `<slug>.d/runs/` is non-empty
+    a task whose `verified[]` cites no receipt while `<slug>.d/runs/` is non-empty.
+    Same function, same class, found at e5: the receipt dict `run` RETURNS omits `scope_digest`
+    while declaring `freshness: content`, so a caller passing it to `fresh()` gets `False` with
+    "no content digest". The receipt on disk is complete; the in-memory copy is not the receipt
+  - **F4 · e1's parser has produced two silent value defects, and the fix for one caused a
+    third — recorded 2026-07-30, decided: keep building.** In order: (a) `append_item` could not
+    append to an inline `verified: []`, dropping every stamp on a fresh node (found by e4, after
+    e1's 15 checks and a human gate); (b) a wrapped double-quoted list item was truncated at the
+    first newline and kept its opening quote, silently losing the tail of a frozen `gives:` — live
+    in `compile-graph` since e2, through 132 checks, the validator and five gates (found by e5
+    RENDERING the value); (c) the first fix counted quote characters instead of scanning them, so
+    one apostrophe swallowed `budget`/`generated`/`verified` across **25 nodes**, with 134 green
+    and CONFORMS (found because `done` refused a transition it could not entitle).
+    **The pattern, not the instances, is the finding.** All three were silent — no exception, no
+    failing check, a plausible wrong value. Two oracles existed and neither could see them: the
+    suite tests constructs it thought of, and the validator has an independent parser, so
+    agreement between them proves nothing about either. What each defect had in common is that
+    nothing asserted READ fidelity: `test_roundtrip_bundle_byte_identical` proves writes are
+    lossless and is silent when a key vanishes from `fm` while the bytes stay perfect.
+    That gap is now closed by `test_live_bundle_keys_all_parse` — every key present in a node's
+    raw text must reach its parsed dict — which is the cheapest strong oracle this project has
+    added, and would have caught all three. A deliberate parser audit was considered and NOT
+    taken: the missing oracle was the actual defect, and it is now in place
 risks:
   - ~~**A22 is specified, not implemented.**~~ **RETIRED at e7, 2026-07-30.** `scope_digest`
     hashes git blobs over `scope:`; the M0 kill-test was run in reverse — `git worktree add`
@@ -111,6 +133,7 @@ risks:
 
 ## EXIT
 - [ ] ten verbs green, each built red-first, each ending in a `next:` line   (← every e-task)
+      ↳ 7 of 10 gated: parse · graph · init · new/freeze/done · status · run/learn · brief · bind
 - [ ] engine ≤ 2,400 lines **`wc -l`**, asserted in CI from wave one          (← build-durability)
 - [ ] every per-task line budget is asserted in the SAME unit as the ceiling  (← amendment A1)
 - [ ] consumed + Σ(remaining allocations) ≤ 2,400 at every gate               (← amendment A3)
