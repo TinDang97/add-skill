@@ -37,8 +37,8 @@ verified: []
 ## CARD
 goal: ten verbs, ≤2,400 lines, stdlib only, shipped inside the skill — and dogfooded here
 shape: five waves; each wave's line budget is asserted in CI so overflow shows at wave one
-state: e13 gate · e15 grammar gated PASS · F1 CLOSED · **0 info 0 error** · 168 checks · engine 1448/2400 · projected 1978/2400, slack 422
-next: e14 `checks --sync` (90) — e13 drifted 12→25 in one build; e15 proved `covers:` placement already varies
+state: e14 CHECKS compiled · 11 of 15 gated · F6 opened · **0 info 0 error** · 190 checks · engine 1621/2400 · projected 2061/2400, slack 339
+next: e8 `build-doctor` (200) — the last verb of the ten; owes F3's receipt→stamp check and F2's covers-resolves check
 
 ## SCOPE
 In:  `add/scripts/add.py` (the engine) · its templates, profiles and method personas ·
@@ -138,6 +138,19 @@ findings:
     filling their CARDs and never noticed the cause. **Assigned to `e9 build-hints-layer`**, which
     already declares `R:FAKEHINT` and `test_hint_is_runnable` — the check was planned before the
     defect was found, which is the one encouraging thing about it
+  - **F6 · `run`'s default `cwd` contradicts the format's own path convention — found 2026-07-30.**
+    `run(root, cid, command)` defaults `cwd` to `root`, i.e. `.add/`, but every `scope:` path in
+    this format is REPO-relative and `scope_digest(cwd, scope)` resolves against `cwd`. So the
+    default silently produces an empty digest and demotes the receipt to `freshness: mtime` — A22's
+    declared fallback taken by accident rather than by the condition it was written for. Worse, it
+    points the caller's command at the bundle: taking e14's receipt with the default made pytest
+    write `.add/.pytest_cache/` INTO the bundle, and the validator went from CONFORMS to 1 error on
+    a file the engine had caused a tool to create. Found by making the mistake, then reading the
+    validator rather than the exit code. Two receipts (`runs/2.md` exit 4, `runs/3.md` exit 1) are
+    kept as recorded outcomes rather than deleted (law 3). **Assigned to `e10 build-durability`**,
+    which owns the engine's IO failure surface: the default should be the bundle's PARENT, and a
+    command whose `cwd` is inside `.add/` should be refused outright — the engine must not be the
+    reason a bundle stops conforming
 risks:
   - ~~**A22 is specified, not implemented.**~~ **RETIRED at e7, 2026-07-30.** `scope_digest`
     hashes git blobs over `scope:`; the M0 kill-test was run in reverse — `git worktree add`
@@ -155,7 +168,7 @@ risks:
 
 ## EXIT
 - [ ] ten verbs green, each built red-first, each ending in a `next:` line   (← every e-task)
-      ↳ 8 of 10 gated: parse · graph · init · new/freeze/done · status · run/learn · brief · bind · gate
+      ↳ 9 of 10 gated: parse · graph · init · new/freeze/done · status · run/learn · brief · bind · gate · checks
       ↳ remaining: `doctor` (e8) · the CLI surface (e11)
 - [ ] engine ≤ 2,400 lines **`wc -l`**, asserted in CI from wave one          (← build-durability)
 - [ ] every per-task line budget is asserted in the SAME unit as the ceiling  (← amendment A1)

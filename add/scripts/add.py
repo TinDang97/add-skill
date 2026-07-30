@@ -23,6 +23,7 @@ half-parsed into a plausible wrong value.
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 import os
@@ -1002,7 +1003,12 @@ def learn(root, lens: str, lesson: str, evidence: str = None) -> tuple:
 # `command-exit`. An evidence kind that can never be earned is not a ladder, it is a label —
 # the same defect A15 found, one level up.
 
-RULE_ID = re.compile(r"^-\s+(M\d+|R:[A-Z0-9_]+)\b")
+# FORMAT §6.1's `covers-grammar`, stated ONCE here and reused. e15 closed F1 by holding
+# FORMAT, the validator and this engine to one grammar; a second copy in this file would
+# reopen R:DRIFT inside the engine itself.
+RULE_ALT = r"M\d+|R:[A-Z0-9_]+"
+RULE_ID = re.compile(rf"^-\s+({RULE_ALT})\b")
+REFERENT = re.compile(rf"\A({RULE_ALT}|goal|G\d+)\Z")
 COVERS_IN_CHECK = re.compile(r"^-\s+(\S+)\s+·\s*covers:\s*([^·]+?)\s*·")
 
 
@@ -1446,3 +1452,170 @@ def quick(root, slug: str, title: str, cmd: list, by: str, cwd=None,
                        f"\nnext: fix, then add run {slug} -- <cmd>")
     ok, note = gate(root, cid, "PASS", by=by)
     return ok, f"quick lane: {slug} opened, run and gated in one call\n{note}"
+
+
+# ================================= checks — the CHECKS section, compiled (e14)
+#
+# F2 measured this project's own version of the defect: 61 cited test names that were never
+# written, across nine gated M0 tasks. Nobody noticed because a plausible test name reads
+# exactly like a real one at review speed.
+#
+# More care at authoring time does not fix it. e13 opened with 12 authored checks and its suite
+# finished at 25 — every addition was discovered DURING the build, so the knowledge did not exist
+# when the section was written. Extraction is the only fix (L7: compiled beats authored).
+#
+# Two carriers, because this repo already contains two: a docstring `covers:` (118 tests) and a
+# `# --- name · covers: … ---` header above the function (e15's subagent, 5 tests). One author was
+# enough for the convention to diverge, so the reader accepts both.
+
+COVERS_IN_TEST = re.compile(r"covers:\s*([^—\n·]+)(?:[—·]\s*(.*))?", re.DOTALL)
+HEADER_COVERS = re.compile(r"^#.*?\b(test_\w+)\s*·\s*covers:\s*([^-\n]+?)\s*-*$", re.MULTILINE)
+
+
+def checks_of(paths) -> dict:
+    """`{test_id: (rule_ids, description)}` for every test in `paths`.
+
+    Which names are functions is the PARSER's answer, not a regex's. A regex over source text
+    reads `def test_…` out of quoted strings: this verb compiled its own task's node and listed
+    three tests that exist only inside fixture string constants. Same defect class as the
+    unanchored validator regex e15 fixed, found the same way — by reading the output.
+
+    An unlabelled test maps to `([], doc)` and is REPORTED as unlabelled, never given a rule
+    inferred from its name (R:GUESS): `test_m1_something` proves whatever its body proves, which
+    may be nothing to do with M1.
+    """
+    found = {}
+    for path in paths:
+        try:
+            tree = ast.parse(src := Path(path).read_text(encoding="utf-8"))
+        except (OSError, SyntaxError):
+            continue
+        real = {n.name: (ast.get_docstring(n) or "") for n in ast.walk(tree)
+                if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and n.name.startswith("test_")}
+        # A header citation is honoured only for a name the parser confirms, so a comment inside a
+        # string literal cannot smuggle one in either.
+        from_header = {m.group(1): m.group(2) for m in HEADER_COVERS.finditer(src)
+                       if m.group(1) in real}
+        for name, doc in real.items():
+            raw, desc = None, ""
+            match = COVERS_IN_TEST.search(doc)
+            if match:
+                raw, desc = match.group(1), match.group(2) or ""
+            elif name in from_header:
+                raw, desc = from_header[name], doc
+            # Every referent is validated against FORMAT §6.1's grammar. A docstring reading
+            # "No covers: anywhere" otherwise yields rules named `anywhere. A gap` — found by a
+            # fixture that said exactly that, by accident. Prose mentioning the word is not a
+            # citation, and the grammar is what tells the two apart.
+            rules = [r.strip() for r in (raw or "").split(",") if REFERENT.match(r.strip())]
+            found[name] = (rules, _summarise(desc))
+    return found
+
+
+def _summarise(text: str, width: int = 110) -> str:
+    """One line, cut at a word and marked as cut. A CHECKS description is a summary of a test,
+    never the test — but a cut that does not say so reads as a typo, not as an omission."""
+    flat = " ".join(text.split()).strip(' ."')
+    if len(flat) <= width:
+        return flat
+    head = flat[:width].rsplit(" ", 1)[0]
+    return f"{head.rstrip(' ,;.')}…"
+
+
+def unlabelled(paths) -> list:
+    """Tests carrying no `covers:` — a visible gap (M3)."""
+    return sorted(name for name, (rules, _) in checks_of(paths).items() if not rules)
+
+
+def _checks_lines(node: dict, paths) -> tuple:
+    """`(lines, gaps)` — the compiled CHECKS body for one node, and its unlabelled tests.
+
+    The citation is compiled because a human cannot be trusted to keep it in step with the suite.
+    The DESCRIPTION is the opposite: knowledge only the author has. Restating the citation as
+    `· proves M1` compiles a line that says nothing twice, so the author's sentence is carried
+    through and only its absence is filled in.
+    """
+    rules, extracted = rules_of(node), checks_of(paths)
+    relevant = {t: v for t, v in extracted.items() if any(r in rules for r in v[0])}
+    lines = [f"- {t} · covers: {', '.join(rs)} · {desc or 'no description in the test'}"
+             for t, (rs, desc) in sorted(relevant.items())]
+    return lines, sorted(t for t, (rs, _) in extracted.items() if not rs)
+
+
+def checks_verify(root, cid: str, paths) -> list:
+    """F2 in BOTH directions, graded. `[{severity, message, rule, test}]` (M2).
+
+    Two findings that look identical mean different things, and grading them the same makes the
+    report useless:
+
+    * a cited test that does not exist on a node **still in `direction`** is `pending` — the task
+      has not been built, and its CHECKS are a plan. Thirteen live nodes reported at first run and
+      four were exactly this;
+    * the same gap on a node carrying a **gate stamp** is an `error`: a claim was accepted against
+      evidence that was not there. That is F2.
+
+    A referent naming no declared rule is always an `error`. Unlike a missing test it cannot come
+    true later — it is a claim about the node's own contents, and the node is right there.
+    """
+    node = scan(Path(root)).get(cid)
+    if node is None:
+        return []
+    full = read(node["path"], "T2")
+    stamps = [s for s in ((node["fm"] or {}).get("verified") or []) if isinstance(s, dict)]
+    gated = any(s.get("act") == "gate" for s in stamps)
+    known, rules = set(checks_of(paths)), set(rules_of(full))
+    findings = []
+    for rule, cited in sorted(covers(full).items()):
+        if rule not in rules:
+            findings.append({"severity": "error", "rule": rule, "test": None,
+                             "message": f"{cid}: `covers: {rule}` names no rule this node declares"})
+        for test in cited:
+            if test not in known:
+                findings.append({
+                    "severity": "error" if gated else "pending", "rule": rule, "test": test,
+                    "message": f"{cid}: `{test}` exists in no suite"
+                               + ("" if gated else " (node is not gated — its checks are a plan)")})
+    return findings
+
+
+def checks_sync(root, cid: str, paths) -> tuple:
+    """Rewrite one node's CHECKS from the suite. `(changed, note)`.
+
+    Refuses a node carrying a gate stamp (R:SILENTFIX). That is the §3.6 asymmetry F2 turned on:
+    e12's own CHECKS were corrected freely because nothing had been stamped, and M0's nine cannot
+    be, because a gate was taken against them. Refusing to repair is not refusing to REPORT —
+    `checks_verify` still speaks.
+    """
+    # Materialised once: this function walks `paths` to compile and again to report how many files
+    # it read, and a generator makes the second walk empty. The section came out correct and the
+    # note said "from 0 suite files" — a true report is not optional in a notary.
+    root, paths = Path(root), list(paths)
+    node = scan(root).get(cid)
+    if node is None:
+        return False, f"no such node: {cid}\nnext: add status"
+    if any(s.get("act") == "gate" for s in ((node["fm"] or {}).get("verified") or [])
+           if isinstance(s, dict)):
+        return False, (f"{cid} carries a gate stamp — a gated claim is recorded, not repaired "
+                       f"(§3.6, R:SILENTFIX)\nnext: add checks {cid.rsplit('/', 1)[-1][:-3]} --verify")
+
+    full = read(node["path"], "T2")
+    lines, gaps = _checks_lines(full, paths)
+    body = full["body"]
+    start = body.find("## CHECKS")
+    if start < 0:
+        return False, f"{cid} has no `## CHECKS` section to compile into\nnext: add status"
+    rest = body[start:]
+    end = start + (rest.find("\n## ", 1) if "\n## " in rest[1:] else len(rest))
+    section = ("## CHECKS\n" + "\n".join(lines) +
+               "\nred-first: every check above MUST fail for the right reason before BUILD.\n" +
+               (f"unlabelled: {', '.join(gaps)} — carry no `covers:`; reported, never inferred (M3)\n"
+                if gaps else "") +
+               "<!-- COMPILED from the suite (e14). Do not author here: a citation edited by hand\n"
+               "     cannot be distinguished from one that was never true (F2). -->\n")
+    new_body = body[:start] + section + body[end:]
+    if new_body == body:
+        return False, f"{cid}'s CHECKS already match the suite\nnext: add status"
+    write(node["path"], f"---\n{full['raw']}\n---\n{new_body}")
+    return True, (f"{cid}: {len(lines)} checks compiled from {len(list(paths))} suite files"
+                  + (f" · {len(gaps)} unlabelled" if gaps else "") + "\nnext: add status")

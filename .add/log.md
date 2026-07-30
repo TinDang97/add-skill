@@ -10,6 +10,11 @@
 
 ## 2026-07-30
 
+- human:tindang · tasks/compile-checks-from-suite · gate PASS — 21 CHECKS lines compiled from 21 real tests; F2's class now structurally impossible
+- process:run · tasks/compile-checks-from-suite · receipt 4 — 189/189 test-ids, exit 0, freshness content, 21 cited IDs bound
+- human:tindang · milestones/engine-core · recorded F6 — `run`'s default cwd is `.add/`, contradicting repo-relative `scope:`; a runner wrote `.pytest_cache/` into the bundle. Assigned e10
+- process:run · tasks/compile-checks-from-suite · receipts 2, 3 — exit 4 then exit 1, both the recorded outcome of F6's default cwd. Kept, not deleted (law 3)
+- claude/opus-5 · tasks/compile-checks-from-suite · ast replaces the DEF_TEST regex — three tests compiled out of fixture STRING CONSTANTS on this node's own CHECKS, the class e15 had just fixed in the validator
 - human:tindang · tasks/resolve-covers-grammar · gate PASS by `add gate` — F1 CLOSED. Bundle at **0 info, 0 error** for the first time
 - human:tindang · FORMAT.md §6.1 · DECISION widen — the grammar is now stated ONCE in a fenced `covers-grammar` block; three oracles held to it by string equality
 - claude/opus-5 · milestones/engine-core · F1 was MISDIAGNOSED: 4 of its 7 symptoms were an unanchored validator regex reading PLAN prose; the other 3 were §6.1 stating no grammar at all
