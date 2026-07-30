@@ -122,6 +122,16 @@ red-first: every check above MUST fail for the right reason before BUILD.
      all found DURING the build, which is exactly why an authored CHECKS section drifts. This
      is e14's mechanism applied by hand once, and it is the argument for e14. -->
 
+> **CORRECTED AFTER THIS GATE — 2026-07-30 (F8).** `placeholders_in` refused e8's fully authored
+> node because its M5 named the path shape `<slug>.d/runs/` inside backticks. The oracle could not
+> tell a template token from prose about a path. Fixed by excluding backticked spans, verified safe
+> against both `BODIES` templates first (no placeholder in either is backticked). Two checks were
+> added to `tests/engine/test_gate_verb.py` after this node was gated —
+> `test_a_backticked_path_pattern_is_not_a_placeholder` and `test_a_real_placeholder_is_still_caught`
+> — so the CHECKS section below lists fewer than the suite now contains. `checks --sync` REFUSES to
+> reconcile that, correctly: this node carries a gate stamp (§3.6, R:SILENTFIX). Nothing above is
+> edited; this is the record.
+
 ## EVIDENCE
 receipt: /tasks/build-gate-verb.d/runs/2.md — 25/25 green · kind test-ids · freshness content ·
   red-first proven by runs/1.md (19/20 fail on absent `gate`/`orphans`/`quick`; `test_run_appends_

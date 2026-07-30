@@ -10,6 +10,12 @@
 
 ## 2026-07-30
 
+- claude/opus-5 · tasks/repair-evidence-ids · opened and frozen — F7's fix; 60 lines from e8's underrun. Must land before the next gate (human decision)
+- human:tindang · milestones/engine-core · recorded F7 — a failing check can be recorded as PASSED; test IDs keyed by bare name, demonstrated on junit. And F8 — `gate` refused a fully authored node over a backticked path pattern; fixed at e8
+- human:tindang · tasks/build-doctor · gate PASS — the last of the ten verbs; parity with the M0 oracle exact on all seven shared codes; 195/200 lines
+- process:run · tasks/build-doctor · receipt 2 — 211/211 test-ids, exit 0, freshness content, 20 cited IDs bound
+- process:run · tasks/build-doctor · receipt 1 — superseded: A22 declared it stale after F8's fix touched the engine, and `gate` refused on that basis
+- human:tindang · tasks/compile-graph · contract EXTENDED after its gate — `scan(root, strays=)` collects non-node files, because the compiled graph was blind to `missing_frontmatter` (the code F6 proved real)
 - human:tindang · tasks/compile-checks-from-suite · gate PASS — 21 CHECKS lines compiled from 21 real tests; F2's class now structurally impossible
 - process:run · tasks/compile-checks-from-suite · receipt 4 — 189/189 test-ids, exit 0, freshness content, 21 cited IDs bound
 - human:tindang · milestones/engine-core · recorded F6 — `run`'s default cwd is `.add/`, contradicting repo-relative `scope:`; a runner wrote `.pytest_cache/` into the bundle. Assigned e10

@@ -44,13 +44,14 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 - [brief — compile a task's context, and nothing else](tasks/build-brief-compiler.md) — `done` · `standard`
 - [run · learn — receipts, and the content-addressed freshness A22 owes](tasks/build-receipts-learn.md) — `done` · `standard` · `security`
 - [the covers: binding — a check that proves a rule, or says it cannot](tasks/build-evidence-binding.md) — `done` · `standard` · `security`
-- [doctor — conformance and repair over the compiled graph](tasks/build-doctor.md) — `direction` · `standard`
+- [doctor — conformance and repair over the compiled graph](tasks/build-doctor.md) — `done` · `standard` · `architecture`
 - [the next: line — one affordance, every verb](tasks/build-hints-layer.md) — `direction` · `standard` · `mechanical`
 - [durability — CI, the budget assertion, and the failure modes](tasks/build-durability.md) — `direction` · `standard`
 - [package the engine inside the skill directory](tasks/package-in-skill.md) — `direction` · `standard`
 - [gate — the verdict, its three refusals, and the quick lane](tasks/build-gate-verb.md) — `done` · `standard` · `security`
 - [CHECKS compiled from the suite, not authored beside it](tasks/compile-checks-from-suite.md) — `done` · `standard` · `architecture`
 - [reconcile the covers: grammar — FORMAT §6.1 vs the validator](tasks/resolve-covers-grammar.md) — `done` · `standard` · `security`
+- [test IDs carry their file — a failing check cannot be recorded as passed](tasks/repair-evidence-ids.md) — `direction` · `standard` · `security`
 - [Define the entity model and slug rules](tasks/define-entity-model.md) — `done` · `standard`
 - [Define the task node schema](tasks/define-task-schema.md) — `done` · `standard`
 - [Define authority and evidence rules](tasks/define-authority-rules.md) — `done` · `standard` · `security`

@@ -388,3 +388,32 @@ def test_gate_on_live_bundle_history():
     print(f"\na strict M2 would have refused {len(would_refuse)} of this project's gates: "
           f"{would_refuse}")
     assert isinstance(would_refuse, list)
+
+
+# ---------------------------------------------- F8, found at e8's gate (post-gate additions)
+
+def test_a_backticked_path_pattern_is_not_a_placeholder():
+    """covers: M1 — `<slug>.d/runs/` inside backticks is a path pattern, not an unfilled template.
+
+    e8's gate REFUSED a fully authored node because its M5 said "a Run node under
+    `<slug>.d/runs/`". The refusal was correct machinery reaching a false conclusion, and the wrong
+    fix is to reword every node that needs to name a path shape — that makes prose pay a permanent
+    tax to a defective oracle. No placeholder in any `BODIES` template is backticked, so excluding
+    backticked spans cannot blind this check: verified against both templates before changing it.
+    """
+    node = {"body": "## RULES\n<must>\n- M1 a receipt under `<slug>.d/runs/` is bound\n</must>\n"}
+    assert add.placeholders_in(node) == [], \
+        f"a backticked path pattern was read as a template placeholder: {add.placeholders_in(node)}"
+
+
+def test_a_real_placeholder_is_still_caught():
+    """covers: M1 — the fix above must not cost the check its actual job.
+
+    Every unfilled token in `BODIES` is unbackticked, and this asserts the ones that matter are
+    still refused — otherwise F8's fix would silently turn off the refusal that made `gate` worth
+    building.
+    """
+    node = {"body": "## RULES\n<must>\n- M1 <what this rule requires>\n</must>\n"
+                    "## CHECKS\n- <check> · covers: M1 · proves M1\n"}
+    found = add.placeholders_in(node)
+    assert "<what this rule requires>" in " ".join(found), f"a real placeholder slipped through: {found}"

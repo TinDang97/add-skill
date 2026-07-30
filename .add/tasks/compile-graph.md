@@ -24,6 +24,10 @@ gives:
   - "load(root) -> graph — always from the files. graph.json is written as a T0 export (FORMAT
      §4) and never read back, so it cannot outrank anything. Corrected from 'cache' at this
      task's gate: the ⚠ measured 2.7 ms and the cache stopped being worth having"
+  - "scan(root, strays=None) / load(root, strays=None) — an OPTIONAL caller-supplied list that
+     collects every `.md` file carrying no frontmatter. ADDED AFTER THIS TASK'S GATE, 2026-07-30,
+     at human authority, for e8 M2 — see the correction in ## PLAN. The graph dict itself is
+     unchanged: strays are not nodes and never appear as keys"
 scope:
   - add/scripts/add.py
   - tests/engine/test_graph.py
@@ -77,6 +81,25 @@ beat: done · gated PASS · 185/347 lines · next: wave 2 — e3 ∥ e4 ∥ e6
   2.7 ms cold. DISCHARGED — the cache was removed rather than kept and predicated.
 
 ## PLAN
+> **CONTRACT EXTENDED AFTER THE GATE — 2026-07-30, human:tindang.** `scan()` skips any file whose
+> frontmatter is absent (`if node["fm"] is None: continue`), which is right for a graph and wrong
+> for an oracle: the compiled graph is structurally blind to `missing_frontmatter`, the M0
+> validator's most consequential error code. Measured on this bundle before deciding — a stray
+> `.md` leaves the node count at 59 and the validator reports it. This is not hypothetical: F6's
+> `.pytest_cache/README.md` was exactly that file shape and only the validator saw it, so an `add
+> doctor` shipped without this would have declared the bundle clean while it did not conform.
+> **What changed:** `scan(root, strays=None)` and `load(root, strays=None)` append the relative
+> path of every non-node `.md` to a list the CALLER owns. Nothing else moved. The alternative —
+> returning strays inside the graph dict under a reserved key — was rejected outright: every
+> consumer iterates `graph.items()` expecting cid→node, so a foreign key would be F4's defect class
+> deliberately reintroduced (a plausible wrong value, silent, with two green oracles).
+> **Why the contract was extended rather than worked around:** e8 could have taken a file list as
+> an argument and left `scan` alone, which is cheaper and touches no gated node. That was put to the
+> human with both options and the decision was to extend, so every later verb inherits the
+> capability instead of e8 owning a private path into the filesystem.
+> Nothing above this line is edited (§3.6). The gate stamp stands on what was accepted then; this
+> is a recorded extension, and e8's suite is what proves it.
+
 contract:
   `scan(root) -> dict[cid, node]` where node is e1's `read(path, "T0")` plus `cid` ·
   `edges(graph) -> list[Edge]` · `resolve(graph, ref) -> (cid, value, why)` ·

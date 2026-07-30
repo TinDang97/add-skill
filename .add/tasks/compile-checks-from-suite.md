@@ -19,6 +19,11 @@ verified:
   - { by: "process:run", at: 2026-07-30, act: run, authority: process, outcome: FAIL, receipt: /tasks/compile-checks-from-suite.d/runs/3.md }
   - { by: "process:run", at: 2026-07-30, act: run, authority: process, outcome: PASS, receipt: /tasks/compile-checks-from-suite.d/runs/4.md }
   - { by: "human:tindang", at: 2026-07-30, act: gate, authority: human, outcome: PASS, receipt: /tasks/compile-checks-from-suite.d/runs/4.md, brief: "sha256:7b2e21c5b54b9909" }
+gives:
+  - "checks_of(paths) -> {test_id: (rule_ids, description)}, read from a docstring `covers:` or a `# --- name · covers: … ---` header. Discovery is ast, never a regex"
+  - "checks_verify(root, cid, paths, extracted=None) -> graded findings — `pending` before a gate, `error` after it. `extracted` shares one extraction across many nodes (e8)"
+  - "checks_sync(root, cid, paths) -> rewrites only ## CHECKS, and REFUSES a gated node (§3.6)"
+  - "PUBLISHED AFTER THIS NODE'S GATE, 2026-07-30: the contract was stated in the CARD and never in frontmatter, so `/tasks/repair-evidence-ids.md` could not cite it and the edge reported unresolved. Additive — nothing the gate accepted is changed"
 scope:
   - add/scripts/add.py
   - tests/engine/test_checks_compiler.py

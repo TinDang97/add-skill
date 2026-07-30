@@ -301,13 +301,24 @@ def cid_of(root: Path, path: Path) -> str:
     return "/" + Path(path).relative_to(root).as_posix()
 
 
-def scan(root) -> dict:
-    """Every node in the bundle at T0. Bodies are not read here (law 2)."""
+def scan(root, strays: list = None) -> dict:
+    """Every node in the bundle at T0. Bodies are not read here (law 2).
+
+    `strays`, if given, is a caller-owned list that collects the relative path of every `.md`
+    carrying no frontmatter. Contract EXTENDED after this task's gate at human authority (see
+    `/tasks/compile-graph.md` `## PLAN`): a graph is right to drop non-nodes, but `doctor` then
+    inherits blindness to `missing_frontmatter` — the M0 oracle's most consequential error, and
+    the one F6 proved real when a command wrote `.pytest_cache/README.md` into this bundle.
+    Strays are NOT nodes and never become keys: every consumer iterates `graph.items()` expecting
+    cid -> node, so a foreign key would be F4's silent-wrong-value class, deliberately rebuilt.
+    """
     root = Path(root)
     graph = {}
     for path in sorted(root.rglob("*.md")):
         node = read(path, "T0")
         if node["fm"] is None:
+            if strays is not None:
+                strays.append(path.relative_to(root).as_posix())
             continue  # not a node — log.md and prose files are data, not graph
         node["cid"] = cid_of(root, path)
         node["root"] = root
@@ -1035,11 +1046,17 @@ def placeholders_in(node: dict) -> list:
     a real rule and a real check, so an unauthored node refuses at the gate with "M1 has no
     reported passing check" — true, and it points at RISK-ACCEPTED when the fix is to author the
     node. Naming the placeholder turns a confusing refusal into an actionable one (M4).
+
+    BACKTICKED spans are code, not template tokens. F8, found when this refused e8's fully authored
+    node over `<slug>.d/runs/` in a Must — correct machinery reaching a false conclusion. Rewording
+    every node that needs to name a path shape would make prose pay a permanent tax to a defective
+    oracle. Safe because no placeholder in either `BODIES` template is backticked, which was
+    measured across both before the exclusion was added rather than assumed.
     """
     found = []
     for heading in ("RULES", "CHECKS"):
         for line in _section_of(node.get("body") or "", heading).splitlines():
-            if line.startswith("- ") and PLACEHOLDER.search(line):
+            if line.startswith("- ") and PLACEHOLDER.search(re.sub(r"`[^`]*`", "", line)):
                 found.append(line.strip())
     return found
 
@@ -1319,16 +1336,23 @@ def brief(root, cid: str, phase: str = None, for_subagent: bool = False,
 VERDICTS = ("PASS", "RISK-ACCEPTED", "HARD-STOP")
 
 
-def orphans(root) -> list:
-    """Receipt nodes that no `verified[]` stamp points at — unreachable evidence (R:ORPHAN)."""
-    root = Path(root)
+def orphans(root, graph: dict = None) -> list:
+    """Receipt nodes that no `verified[]` stamp points at — unreachable evidence (R:ORPHAN).
+
+    A receipt IS a node (`type: Run`), so this reads the compiled graph rather than walking
+    `runs/*.md`. e8's R:SECONDSCAN is what forced the question, and the graph was always the right
+    basis: a receipt outside `runs/` was invisible to the old walk, and a malformed one with no
+    frontmatter now surfaces as `missing_frontmatter` instead of being counted as evidence.
+    Asserted equal to the directory walk on the live bundle before the basis was changed.
+    """
+    graph = scan(root) if graph is None else graph
     cited = set()
-    for node in scan(root).values():
+    for node in graph.values():
         for stamp in ((node["fm"] or {}).get("verified") or []):
             if isinstance(stamp, dict) and stamp.get("receipt"):
                 cited.add(str(stamp["receipt"]).lstrip("/"))
-    return ["/" + str(p.relative_to(root)) for p in sorted(root.rglob("runs/*.md"))
-            if str(p.relative_to(root)) not in cited]
+    return sorted(cid for cid, node in graph.items()
+                  if (node["fm"] or {}).get("type") == "Run" and cid.lstrip("/") not in cited)
 
 
 def latest_receipt(root, cid: str) -> tuple:
@@ -1543,8 +1567,12 @@ def _checks_lines(node: dict, paths) -> tuple:
     return lines, sorted(t for t, (rs, _) in extracted.items() if not rs)
 
 
-def checks_verify(root, cid: str, paths) -> list:
+def checks_verify(root, cid: str, paths, extracted: dict = None) -> list:
     """F2 in BOTH directions, graded. `[{severity, message, rule, test}]` (M2).
+
+    `extracted` is `checks_of(paths)` computed once by a caller checking many nodes. Without it,
+    `doctor` re-parsed the whole suite per node — 1,650 ms against 37 ms on this bundle, on the
+    verb meant to run in CI. The parameter exists so the cost is paid once, not 59 times.
 
     Two findings that look identical mean different things, and grading them the same makes the
     report useless:
@@ -1564,7 +1592,7 @@ def checks_verify(root, cid: str, paths) -> list:
     full = read(node["path"], "T2")
     stamps = [s for s in ((node["fm"] or {}).get("verified") or []) if isinstance(s, dict)]
     gated = any(s.get("act") == "gate" for s in stamps)
-    known, rules = set(checks_of(paths)), set(rules_of(full))
+    known, rules = set(extracted if extracted is not None else checks_of(paths)), set(rules_of(full))
     findings = []
     for rule, cited in sorted(covers(full).items()):
         if rule not in rules:
@@ -1619,3 +1647,176 @@ def checks_sync(root, cid: str, paths) -> tuple:
     write(node["path"], f"---\n{full['raw']}\n---\n{new_body}")
     return True, (f"{cid}: {len(lines)} checks compiled from {len(list(paths))} suite files"
                   + (f" · {len(gaps)} unlabelled" if gaps else "") + "\nnext: add status")
+
+
+# ================================= doctor — conformance and repair over the graph (e8)
+#
+# `doctor` is a REPORTER assembled from oracles that already exist — the graph, `cycles`,
+# `card_drift`, `orphans`, `checks_verify` — plus the frontmatter and body rules the M0 validator
+# enforces that no verb yet reads. Almost none of this is new logic, and A1 pre-booked the 150-line
+# saving on exactly that: it runs over e2's compiled graph and never builds a second scan.
+#
+# M2 is asymmetric parity, decided before BUILD and recorded on the node. On the validator's own
+# seven codes the two must agree finding-for-finding; beyond them `doctor` may report more, because
+# it reads STAMPS and the validator cannot. R:DIVERGE means "no CONFORMANCE finding the M0 oracle
+# would not also produce", not "no finding at all".
+
+ABF_TYPES = ("Project", "Milestone", "Task", "Spec", "Persona", "Prompt", "Run")
+NOT_A_NODE = ("index.md", "log.md")   # the validator's RESERVED — compiled bodies, A11/A20
+MD_LINK = re.compile(r"\]\(([^)\s]+\.md)\)")
+COMPILED_MARKER = "COMPILED BODY"
+
+
+def _heading_slugs(body: str) -> set:
+    return {re.sub(r"-+", "-", re.sub(r"[^a-z0-9]+", "-", line.lstrip("#").strip().lower())).strip("-")
+            for line in body.splitlines() if line.startswith("#")}
+
+
+def doctor(root, graph: dict = None, paths=None) -> list:
+    """Every conformance finding for a bundle. `[{severity, code, detail, node}]`. Reports only.
+
+    Law 3 as a signature: nothing here writes. A conformance checker that silently repairs is one
+    whose report cannot be trusted, because the reader cannot tell what it found from what it
+    changed — `doctor_sync` is the separate, asked-for verb.
+
+    `graph` may be supplied by a caller that already has one (R:SECONDSCAN: doctor never scans
+    twice). `paths` is the test suite for M6's F2 check; omitted, that check is skipped rather
+    than guessed at.
+    """
+    root = Path(root)
+    strays = []
+    graph = scan(root, strays=strays) if graph is None else graph
+    out = []
+
+    def find(severity, code, detail, node=None):
+        out.append({"severity": severity, "code": code, "detail": detail, "node": node})
+
+    for rel in strays:
+        if rel not in NOT_A_NODE:
+            find("error", "missing_frontmatter", rel)
+
+    for cid, node in sorted(graph.items()):
+        rel, fm = cid.lstrip("/"), node["fm"] or {}
+        node_type = fm.get("type")
+        if not node_type or not isinstance(node_type, str):
+            if rel not in NOT_A_NODE:
+                find("error", "type_empty", rel, cid)
+        elif node_type not in ABF_TYPES:
+            find("info", "unknown_type", f"{rel}: {node_type}", cid)
+
+    for src, key, ref, target in edges(graph):
+        rel = src.lstrip("/")
+        resolved = (root / _norm(src, ref).lstrip("/")).resolve()
+        if not resolved.is_relative_to(root.resolve()):
+            find("error", "edge_out_of_bundle", f"{rel} -> {ref}", src)
+        elif target is None:
+            find("info", "edge_unresolved", f"{rel} -> {ref}", src)
+        elif (fragment := ref.partition("#")[2]):
+            body = read(graph[target]["path"], "T2")["body"]
+            if fragment not in (graph[target]["fm"] or {}) and fragment not in _heading_slugs(body):
+                find("info", "edge_unresolved", f"{rel} -> {ref}", src)
+
+    for cid, node in sorted(graph.items()):
+        for link in MD_LINK.findall(read(node["path"], "T2")["body"]):
+            if not link.startswith(("http://", "https://")) \
+                    and not (root / cid.lstrip("/")).parent.joinpath(link).exists():
+                find("info", "broken_md_link", f"{cid.lstrip('/')} -> {link}", cid)
+
+    declared = (root / ".gitattributes").read_text(encoding="utf-8") \
+        if (root / ".gitattributes").is_file() else ""
+    for name in NOT_A_NODE:
+        path = root / name
+        if not path.is_file() or not split(path.read_text(encoding="utf-8"))[1].strip():
+            continue  # nothing rendered yet, so nothing a human can lose
+        missing = ([f"no `{COMPILED_MARKER}` marker"] if COMPILED_MARKER not in path.read_text() else []) \
+            + ([] if any(l.split()[:1] == [name] for l in declared.splitlines()) else ["no .gitattributes entry"])
+        if missing:
+            find("info", "compiled_undeclared", f"{name}: {', '.join(missing)}")
+
+    # -- beyond the M0 oracle: findings only a reader of STAMPS can make --
+    for loop in cycles(graph):
+        find("error", "dependency_cycle", " -> ".join(loop), loop[0])
+    for cid, key, said, actual in card_drift(graph):
+        find("info", "card_drift", f"{cid.lstrip('/')}: CARD `{key}` says {said}, status is {actual}", cid)
+    for receipt in orphans(root, graph=graph):
+        find("error", "orphan_receipt", receipt, receipt)
+    if paths:
+        extracted = checks_of(paths)   # once, not once per node — see checks_verify's docstring
+        for f in (c for cid in graph for c in checks_verify(root, cid, paths, extracted)):
+            if f["severity"] == "error":   # `pending` is a plan, not a defect (e14's grading)
+                find("error", "checks_citation", f["message"])
+    return out
+
+
+INDEX_SECTIONS = (("Project", "Project"), ("Specs", "Spec"),
+                  ("Milestones", "Milestone"), ("Tasks", "Task"))
+INDEX_ENTRY = re.compile(r"^- \[[^\]]*\]\(([^)]+)\)(?:\s+—\s*(.*))?$")
+
+
+def _render_index(root, graph: dict) -> str:
+    """Rebuild `index.md`'s TOC from the nodes, PRESERVING each entry's authored description.
+
+    A11 calls this body compiled, and it mostly is — the link, the title and the status tokens are
+    all derivable. But the sentence after them is not: "ten verbs, ≤2,400 lines, dogfooded here"
+    was written by a human and exists nowhere else in the bundle. Regenerating the whole body would
+    be A23 resolution that silently eats authored prose, which is R:SYNCAUTHORED wearing a helpful
+    face. So the mechanical tokens are recomputed and the tail is carried across, keyed by path.
+    Frontmatter is never touched: `sensitive_paths` is the A17 floor and no tool may rewrite it.
+    """
+    path = root / "index.md"
+    raw, body = split(path.read_text(encoding="utf-8"))
+    kept = {m.group(1): (m.group(2) or "") for line in body.splitlines()
+            if (m := INDEX_ENTRY.match(line.strip()))}
+    marker = next((l for l in body.splitlines() if COMPILED_MARKER in l),
+                  f"<!-- COMPILED BODY (A11) — regenerated by the engine; do not hand-maintain. -->")
+    out = [marker, ""]
+    for heading, node_type in INDEX_SECTIONS:
+        rows = []
+        for cid, node in sorted(graph.items()):
+            fm = node["fm"] or {}
+            if fm.get("type") != node_type:
+                continue
+            rel = cid.lstrip("/")
+            tail = kept.get(rel, "")
+            if node_type == "Task":
+                # fully mechanical, and it MUST recompute: a preserved `direction` on a gated task
+                # is the index lying about the graph, which is the only thing an index is for.
+                bits = [f"`{fm.get(k)}`" for k in ("status", "depth", "sensitivity") if fm.get(k)]
+                detail = " · ".join(bits)
+            elif node_type == "Milestone":
+                authored = tail.split("—", 1)[1].strip() if "—" in tail else ""
+                detail = f"`{fm.get('status', '?')}`" + (f" — {authored}" if authored else "")
+            else:
+                detail = tail
+            rows.append(f"- [{fm.get('title', rel)}]({rel})" + (f" — {detail}" if detail else ""))
+        if rows:
+            out += [f"## {heading}", ""] + rows + [""]
+    return f"---\n{raw}\n---\n\n" + "\n".join(out).rstrip("\n") + "\n"
+
+
+def doctor_sync(root) -> tuple:
+    """Recompute every COMPILED artifact from the nodes. `(changed, note)`.
+
+    A23 merge resolution: a conflicted `index.md` or `log.md` is resolved by recomputation rather
+    than by hand. Sound only because L1 makes them views — the same edit to a node body is data
+    loss. So this writes exactly what FORMAT declares compiled and nothing else (R:SYNCAUTHORED),
+    and it never manufactures history: an orphaned receipt is REPORTED forever, never given the
+    stamp it lacks, because a stamp invented now claims a binding that did not happen
+    (R:REPAIRAWAY).
+    """
+    root = Path(root)
+    graph, changed = load(root), []
+    for cid, key, _said, _actual in card_drift(graph):
+        ok, _ = render_card(root, cid)
+        if ok:
+            changed.append(f"{cid.lstrip('/')} CARD `{key}`")
+    if (index := root / "index.md").is_file():
+        rebuilt = _render_index(root, graph)
+        if rebuilt and rebuilt != index.read_text(encoding="utf-8"):
+            write(index, rebuilt)
+            changed.append("index.md")
+    if not changed:
+        return False, ("every compiled artifact already matches the nodes\n"
+                       "next: add doctor  (to see what is reported but not repairable)")
+    return True, ("recomputed " + " · ".join(changed) +
+                  "\nnext: add doctor  (orphaned receipts and gated claims are never repaired)")

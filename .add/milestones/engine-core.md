@@ -23,6 +23,7 @@ tasks:
   - /tasks/build-gate-verb.md
   - /tasks/compile-checks-from-suite.md
   - /tasks/resolve-covers-grammar.md
+  - /tasks/repair-evidence-ids.md
 depends_on:
   - /milestones/format-standard.md
 generated: { by: claude/opus-5, at: 2026-07-29 }
@@ -37,8 +38,8 @@ verified: []
 ## CARD
 goal: ten verbs, ≤2,400 lines, stdlib only, shipped inside the skill — and dogfooded here
 shape: five waves; each wave's line budget is asserted in CI so overflow shows at wave one
-state: e14 CHECKS compiled · 11 of 15 gated · F6 opened · **0 info 0 error** · 190 checks · engine 1621/2400 · projected 2061/2400, slack 339
-next: e8 `build-doctor` (200) — the last verb of the ten; owes F3's receipt→stamp check and F2's covers-resolves check
+state: **all ten verbs gated** · 12 of 16 · F7 F8 opened, F8 fixed · **0 info 0 error** · 212 checks · engine 1822/2400 · projected 2122/2400, slack 278
+next: e16 `repair-evidence-ids` (60) — F7 must land before the next gate; a failing check can currently be recorded as PASSED
 
 ## SCOPE
 In:  `add/scripts/add.py` (the engine) · its templates, profiles and method personas ·
@@ -151,6 +152,38 @@ findings:
     which owns the engine's IO failure surface: the default should be the bundle's PARENT, and a
     command whose `cwd` is inside `.add/` should be refused outright — the engine must not be the
     reason a bundle stops conforming
+  - **F7 · a failing check can be recorded as PASSED, because test IDs are keyed by bare name —
+    found 2026-07-30 at e8's receipt.** `extract_ids` does `out[name] = "fail" if bad else "pass"`,
+    so two tests sharing a name in different files collide and the LAST one parsed wins. Not
+    theoretical and not rare: this repo already has the collision — `test_sync_is_idempotent` exists
+    in both `test_checks_compiler.py` and `test_doctor.py`, which is why e8's receipt reads
+    **209/209 reported against a suite of 210**. Demonstrated directly: a junit file with one failing
+    and one passing `test_same` yields `{'test_same': 'pass'}`. **The failure disappears from the
+    evidence.**
+    This is the worst-placed defect the project has found. A24's whole ladder rests on `test-ids`
+    being the strongest kind of evidence, `gate` binds a node's `covers:` against exactly this dict,
+    and `unbound` decides refusals from it — so a green gate can be entitled by a check that failed.
+    Every receipt taken with `kind: test-ids` inherits the ambiguity, including this milestone's.
+    The same key mistake is in `checks_of` (e14), which also maps bare name -> citation, so two
+    same-named tests in different files collapse there too and `doctor`'s F2 check inherits it.
+    The fix is the junit `classname` attribute, which was in the data all along and thrown away:
+    the ID should be `classname::name`. That changes every existing receipt's ID SHAPE, so it is a
+    migration question and not a one-line edit — assigning it needs a decision, recorded below when
+    one is taken. Found by noticing 209 where 210 was expected, which is the fourth defect this wave
+    caught by reading a number rather than by running a test
+  - **F8 · `gate` refused a fully authored node over a path pattern — found 2026-07-30, at e8's
+    gate, and FIXED there.** `placeholders_in` matches `<[a-z_][^>]*>` anywhere in a RULES or CHECKS
+    line, so e8's M5 — "a Run node under `<slug>.d/runs/` that no `verified[]` stamp points at" —
+    read as an unfilled template token and the gate refused with "author build-doctor's RULES and
+    CHECKS". Correct machinery, false conclusion, and the tempting fix was the wrong one: rewording
+    every node that needs to name a path SHAPE makes prose pay a permanent tax to a defective oracle,
+    and it is R:SELFSERVE's shape — bending the content so the author's own node passes.
+    Fixed instead by excluding backticked spans, which are code and not template tokens. Verified
+    safe before changing it: **no placeholder in either `BODIES` template is backticked**, measured
+    across both, so the exclusion cannot blind the refusal that made `gate` worth building. Two
+    checks were added to e13's suite after e13's gate and are recorded as a correction on its node.
+    Worth stating plainly: a refusal that fires wrongly is more expensive than one that never fires,
+    because it teaches the author to work around the oracle
 risks:
   - ~~**A22 is specified, not implemented.**~~ **RETIRED at e7, 2026-07-30.** `scope_digest`
     hashes git blobs over `scope:`; the M0 kill-test was run in reverse — `git worktree add`
@@ -167,15 +200,18 @@ risks:
     comments this bundle uses to carry rationale. Writes must be surgical, not regenerative
 
 ## EXIT
-- [ ] ten verbs green, each built red-first, each ending in a `next:` line   (← every e-task)
-      ↳ 9 of 10 gated: parse · graph · init · new/freeze/done · status · run/learn · brief · bind · gate · checks
-      ↳ remaining: `doctor` (e8) · the CLI surface (e11)
+- [x] ten verbs green, each built red-first, each ending in a `next:` line   (← every e-task)
+      ↳ **10 of 10 gated**: parse · graph · init · new/freeze/done · status · run/learn · brief ·
+        bind · gate · checks · doctor
+      ↳ the VERBS are done; `e11 package-in-skill` still owes the CLI surface that reaches them
 - [ ] engine ≤ 2,400 lines **`wc -l`**, asserted in CI from wave one          (← build-durability)
 - [ ] every per-task line budget is asserted in the SAME unit as the ceiling  (← amendment A1)
 - [ ] consumed + Σ(remaining allocations) ≤ 2,400 at every gate               (← amendment A3)
 - [ ] `.add/` in this repo is driven by the engine, not by hand              (← package-in-skill)
 - [ ] `python3 add/scripts/add.py` runs from a clean checkout with zero install (← package-in-skill)
-- [ ] every FORMAT rule the validator enforces still holds after the engine writes (← build-doctor)
+- [x] every FORMAT rule the validator enforces still holds after the engine writes (← build-doctor)
+      ↳ `test_parity_with_m0_oracle`, gated 2026-07-30 — exact agreement on all seven of the M0
+        validator's codes, run as a SUBPROCESS so the two implementations stay independent
 - [x] a receipt survives a fresh worktree checkout (A22 implemented, not just specified) (← build-receipts-learn)
       ↳ `test_receipt_survives_worktree`, gated 2026-07-30. mtime rewritten, digest unchanged, FRESH
 
