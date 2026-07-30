@@ -37,8 +37,8 @@ verified: []
 ## CARD
 goal: ten verbs, ≤2,400 lines, stdlib only, shipped inside the skill — and dogfooded here
 shape: five waves; each wave's line budget is asserted in CI so overflow shows at wave one
-state: e13 `gate` gated PASS by the GATE VERB — 8 of 10 verbs done · 161 checks · engine 1448/2400 · projected 2008/2400, slack 392
-next: e14 `checks --sync` (90) — e13's CHECKS drifted 12→25 inside one build, which is e14's whole case
+state: e13 gate · e15 grammar gated PASS · F1 CLOSED · **0 info 0 error** · 168 checks · engine 1448/2400 · projected 1978/2400, slack 422
+next: e14 `checks --sync` (90) — e13 drifted 12→25 in one build; e15 proved `covers:` placement already varies
 
 ## SCOPE
 In:  `add/scripts/add.py` (the engine) · its templates, profiles and method personas ·
@@ -62,6 +62,15 @@ findings:
     while conforming to what the format actually says. One of the two is wrong. Left OPEN
     rather than fixed inline: both files are sensitive paths, and widening a grammar so the
     author's own nodes pass is the move A17 exists to prevent. Needs its own gated task
+    **CLOSED 2026-07-30 by e15 — and the finding above was wrong about what it was.** 7 info → 0.
+    Four of the seven were a validator defect: `COVERS` was unanchored, scanned the whole body,
+    read `· covers: …` out of PLAN prose and invented referents. The remaining three were not two
+    grammars disagreeing but the absence of one — §6.1 stated the metavariable `R:<CODE>` and
+    expanded `<CODE>` nowhere, so the validator and the engine each invented a grammar privately
+    and drifted in opposite directions. §6.1 now carries a fenced `covers-grammar` block as the
+    single statement and `test_grammar_stated_once` holds all three oracles to it by string
+    equality. Decision: WIDEN to admit digits (human:tindang), recorded with its reason in the
+    node's `## DECISION` section. The finding text above is left as written per §3.6
   - **F2 · 65 rules are LABELLED, not proven — measured by e12 on this bundle, 2026-07-30.**
     Binding every gated task's `covers:` labels against the set of check IDs that exist in the
     suites: **67 of 133 rules proven.** Of the 66 that are not, **65 are claimed by check IDs that

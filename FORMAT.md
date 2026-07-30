@@ -426,6 +426,21 @@ RULES section, so the referent is defined explicitly:
 | `quick` | `goal`, or `G<n>` — the nth entry of `gives:` |
 | `standard` · `deep` | `M<n>` (a Must) or `R:<CODE>` (a Reject) |
 
+The table above is prose for a reader. **This block is the grammar**, and it is the only
+statement of it — every oracle enforces these exact patterns, and a check holds them equal:
+
+```covers-grammar
+quick           = \A(goal|G\d+)\Z
+standard | deep = \A(M\d+|R:[A-Z0-9_]+)\Z
+```
+
+*Why a fenced block and not prose (F1, resolved 2026-07-30).* §6.1 previously stated only the
+metavariable `R:<CODE>` and expanded `<CODE>` nowhere in this document. A metavariable cannot be
+compared to a regex, so no implementation could be held to §6.1 as written — and two did drift,
+the validator to `R:[A-Z_]+` and the engine to `R:[A-Z0-9_]+`. The disagreement was never between
+two grammars; one side had never stated one. A grammar with no machine-readable address cannot be
+kept in step with a second oracle, so it will not be.
+
 **Red-first is not claimed at `quick` depth.** One engine call cannot produce a
 pre-build receipt, so a quick-lane receipt records `red_first: unproven` rather than
 implying evidence it does not have.

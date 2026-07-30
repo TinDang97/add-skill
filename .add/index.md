@@ -50,7 +50,7 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 - [package the engine inside the skill directory](tasks/package-in-skill.md) — `direction` · `standard`
 - [gate — the verdict, its three refusals, and the quick lane](tasks/build-gate-verb.md) — `done` · `standard` · `security`
 - [CHECKS compiled from the suite, not authored beside it](tasks/compile-checks-from-suite.md) — `direction` · `standard` · `architecture`
-- [reconcile the covers: grammar — FORMAT §6.1 vs the validator](tasks/resolve-covers-grammar.md) — `direction` · `standard` · `security`
+- [reconcile the covers: grammar — FORMAT §6.1 vs the validator](tasks/resolve-covers-grammar.md) — `done` · `standard` · `security`
 - [Define the entity model and slug rules](tasks/define-entity-model.md) — `done` · `standard`
 - [Define the task node schema](tasks/define-task-schema.md) — `done` · `standard`
 - [Define authority and evidence rules](tasks/define-authority-rules.md) — `done` · `standard` · `security`

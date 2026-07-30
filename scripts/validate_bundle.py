@@ -54,11 +54,12 @@ MD_LINK = re.compile(r"\]\(([^)\s]+\.md)\)")
 # (F1, open since M0). `tests/test_covers_grammar.py` holds these against the
 # `covers-grammar` block in FORMAT §6.1 and against the engine's `RULE_ID`.
 #
-# NOTE (e15, unresolved): `COVERS_RULE` admits no digit, so the engine's
-# `R:[A-Z0-9_]+` accepts three IDs in this bundle that this validator rejects. Which of
-# the two is the format is a `human` decision and is NOT settled here.
+# RESOLVED (e15, human:tindang 2026-07-30): widened to admit digits, matching the engine.
+# These two patterns are byte-identical to the `covers-grammar` block in FORMAT §6.1, and
+# `tests/test_covers_grammar.py::test_grammar_stated_once` asserts that equality rather
+# than trusting a human to re-check it.
 COVERS_QUICK = re.compile(r"\A(goal|G\d+)\Z")
-COVERS_RULE = re.compile(r"\A(M\d+|R:[A-Z_]+)\Z")
+COVERS_RULE = re.compile(r"\A(M\d+|R:[A-Z0-9_]+)\Z")
 
 # A `covers:` referent is a field of a CHECKS list item (FORMAT §8.3), so it is matched
 # line-anchored and only inside that section. An unanchored scan of the whole body reads

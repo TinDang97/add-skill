@@ -10,6 +10,11 @@
 
 ## 2026-07-30
 
+- human:tindang · tasks/resolve-covers-grammar · gate PASS by `add gate` — F1 CLOSED. Bundle at **0 info, 0 error** for the first time
+- human:tindang · FORMAT.md §6.1 · DECISION widen — the grammar is now stated ONCE in a fenced `covers-grammar` block; three oracles held to it by string equality
+- claude/opus-5 · milestones/engine-core · F1 was MISDIAGNOSED: 4 of its 7 symptoms were an unanchored validator regex reading PLAN prose; the other 3 were §6.1 stating no grammar at all
+- human:tindang · scripts/validate_bundle.py · merged the subagent's fix at `human` authority (A17, sensitive path) — `covers:` now anchored to the CHECKS section
+- claude/opus-5 · tasks/resolve-covers-grammar · L-E FIRST TRIAL — executed by a subagent in an isolated worktree from an 11,458 B compiled brief; 123,069 tokens, 53 tool calls, 12.5 min. Every constraint held; the human decision correctly refused
 - human:tindang · tasks/build-gate-verb · gate PASS — recorded BY `add gate`: freshness fresh, brief sha256:7e7013b0, receipt 2. The first gate in this project not hand-appended
 - claude/opus-5 · tasks/build-gate-verb · CORRECTION — the first gate stamp was taken with freshness silently skipped: `new` ran without `scope=`, so frontmatter had no `scope:` while the CARD claimed one. Both stamps kept (§3.6)
 - process:run · tasks/build-gate-verb · receipt 2 — 25/25 pass, kind test-ids, freshness content, 25/25 cited IDs bound
