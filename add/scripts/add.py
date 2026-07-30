@@ -26,6 +26,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import subprocess
 from pathlib import Path, PurePosixPath
 
 FENCE = re.compile(r"\A---\n(.*?)\n---\n?(.*)\Z", re.DOTALL)
@@ -810,3 +811,228 @@ def status(root, locate_term: str = None, milestone: str = None,
     else:
         nxt = "next: add new milestone <slug>"
     return "\n".join(out + [nxt])
+
+
+# ============================ run · freshness · learn — the receipt layer (e7)
+#
+# This module pays the A22 debt. A receipt is fresh when the code it observed is the code
+# that exists now, and "now" is decided by CONTENT, not by timestamps:
+#
+#   `git worktree add` sets every checked-out file's mtime to checkout time. Under the
+#   mtime predicate every committed receipt reads stale in a fresh clone, worktree or CI
+#   job — deterministically, and hardest on the two designs this format promotes. Blob
+#   hashes do not move when a file is checked out, so they answer the question actually
+#   being asked: is this the same code?
+#
+# `run` executes the command the AGENT supplied and notarises the result. It never runs
+# anything on its own initiative, and it is always bounded by a timeout — a hang is a
+# recorded outcome, not a lost session.
+
+RUN_TIMEOUT = 900
+
+
+def _git(root, *args, timeout: int = 30):
+    """Run one git command. Returns None when git is absent or the tree is not a repo."""
+    try:
+        done = subprocess.run(["git", *args], cwd=str(root), capture_output=True,
+                              text=True, timeout=timeout)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return done.stdout.strip() if done.returncode == 0 else None
+
+
+def scope_digest(root, scope: list) -> list:
+    """`[{path, blob}]` — git blob hashes over the freshness set (FORMAT §8.1, A22).
+
+    Outside a git working tree this returns `[]`, and the caller must declare
+    `freshness: mtime` rather than pretend to a content digest it cannot compute.
+    """
+    root = Path(root)
+    if _git(root, "rev-parse", "--git-dir") is None:
+        return []
+    out = []
+    for entry in sorted(str(s) for s in (scope or [])):
+        for path in sorted(root.glob(entry)) if any(c in entry for c in "*?[") else [root / entry]:
+            if not path.is_file():
+                continue
+            blob = _git(root, "hash-object", str(path.relative_to(root)))
+            if blob:
+                out.append({"path": path.relative_to(root).as_posix(), "blob": f"sha1:{blob}"})
+    return out
+
+
+def fresh(receipt: dict, root) -> tuple:
+    """`(ok, why)` — recompute the digest and compare. Any difference is stale."""
+    root = Path(root)
+    recorded = receipt.get("scope_digest") or []
+    if receipt.get("freshness") != "content" or not recorded:
+        return False, "receipt carries no content digest — freshness cannot be established"
+    for entry in recorded:
+        path = root / str(entry.get("path"))
+        if not path.is_file():
+            return False, f"{entry.get('path')} has vanished since the run"
+        blob = _git(root, "hash-object", str(path.relative_to(root)))
+        if blob is None or f"sha1:{blob}" != entry.get("blob"):
+            return False, f"{entry.get('path')} changed since the run"
+    return True, "every file in scope is byte-identical to the run"
+
+
+def run(root, cid: str, command: list, cwd=None, timeout: int = RUN_TIMEOUT, junit=None) -> dict:
+    """Execute the agent's own command, notarise the result as a Run node.
+
+    Never executes anything the caller did not supply. A non-zero exit and a timeout are
+    both recorded outcomes — this function does not raise on a failing command (law 3).
+    """
+    root, cwd = Path(root), Path(cwd or root)
+    node = (scan(root).get(cid) or {})
+    scope = ((node.get("fm") or {}).get("scope")) or []
+    digest = scope_digest(cwd, scope)
+
+    try:
+        done = subprocess.run([str(c) for c in command], cwd=str(cwd),
+                              capture_output=True, text=True, timeout=timeout)
+        exit_code, stdout, note = done.returncode, done.stdout[-2000:], ""
+    except subprocess.TimeoutExpired:
+        exit_code, stdout, note = 124, "", f"timeout after {timeout}s — recorded, not raised"
+    except OSError as err:
+        exit_code, stdout, note = 127, "", f"could not start the command: {err}"
+
+    slug = cid.rsplit("/", 1)[-1][:-3]
+    runs = root / f"tasks/{slug}.d/runs"
+    runs.mkdir(parents=True, exist_ok=True)
+    n = len(list(runs.glob("*.md"))) + 1
+    # A24: the evidence kind is EARNED, never assumed. `test-ids` requires IDs a runner
+    # actually reported — e12 owes that extraction. Until then the honest kind for a bare
+    # command is `command-exit`. Freshness is a separate question from evidence, and wiring
+    # both to the presence of a digest (as this first did) claims proof that does not exist.
+    # A24's ladder is climbed only with real IDs (e12). No report, no promotion.
+    ids = extract_ids(junit) if junit else {}
+    receipt = {"kind": "test-ids" if ids else "command-exit",
+               "ids": f"{sum(v == 'pass' for v in ids.values())}/{len(ids)} reported" if ids else "unknown",
+               "exit": exit_code,
+               "freshness": "content" if digest else "mtime", "at": _today(),
+               "stdout": stdout.strip().splitlines()[-1] if stdout.strip() else "",
+               "note": note}
+    body = (f"---\ntype: Run\nruntime: process\ntask: {cid}\n"
+            f'computation: "{" ".join(str(c) for c in command)}"\n'
+            f"receipt:\n" + "".join(f"  {k}: {v!r}\n" if k in ("stdout", "note") else f"  {k}: {v}\n"
+                                    for k, v in receipt.items()) +
+            ("  scope_digest:\n" + "".join(
+                f'    - {{ path: {d["path"]}, blob: "{d["blob"]}" }}\n' for d in digest) if digest else "") +
+            f"{_stamp('process:run')}\n---\n")
+    write(runs / f"{n}.md", body)
+    return {"path": runs / f"{n}.md", "receipt": receipt, "computation": " ".join(str(c) for c in command),
+            "note": f"receipt {n} recorded (exit {exit_code})\nnext: add gate {slug}"}
+
+
+def learn(root, lens: str, lesson: str, evidence: str = None) -> tuple:
+    """Append a lesson to a spec's `## Deltas`. Evidence is required, not decorative.
+
+    A lesson with no evidence is an opinion, and a spec full of opinions is the thing this
+    method exists to replace.
+    """
+    if not evidence:
+        return False, "refused: a lesson needs evidence — cite the receipt or decision that caused it"
+    path = Path(root) / "specs" / f"{lens}.md"
+    if not path.is_file():
+        return False, f"no such spec lens: {lens}\nnext: add status"
+    node = read(path, "T2")
+    lines = node["body"].splitlines(keepends=True)
+    entry = f"- {lesson} — evidence: {evidence} ({_today()})\n"
+    for i, line in enumerate(lines):
+        if line.startswith("## Deltas"):
+            lines.insert(i + 2 if i + 1 < len(lines) else i + 1, entry)
+            break
+    else:
+        lines += ["\n## Deltas\n\n", entry]
+    write(path, f"---\n{node['raw']}\n---\n{''.join(lines)}")
+    return True, f"recorded on specs/{lens}\nnext: add status"
+
+
+# ================================== the covers: binding — evidence that earns its name (e12)
+#
+# A15's finding: `covers:` was a LABEL. A task could claim a Must was proven by a check that
+# never ran, and nothing noticed. Here a Must is proven only by a check ID the RUNNER
+# reported passing — not by a string in a markdown table.
+#
+# This also closes the gap e7 left: `test-ids` was unreachable, so every receipt degraded to
+# `command-exit`. An evidence kind that can never be earned is not a ladder, it is a label —
+# the same defect A15 found, one level up.
+
+RULE_ID = re.compile(r"^-\s+(M\d+|R:[A-Z0-9_]+)\b")
+COVERS_IN_CHECK = re.compile(r"^-\s+(\S+)\s+·\s*covers:\s*([^·]+?)\s*·")
+
+
+def _section_of(body: str, heading: str) -> str:
+    out, inside = [], False
+    for line in body.splitlines(keepends=True):
+        if line.startswith("## "):
+            if inside:
+                break
+            inside = line.strip().lower() == f"## {heading}".lower()
+            continue
+        if inside:
+            out.append(line)
+    return "".join(out)
+
+
+def rules_of(node: dict) -> list:
+    """Every Must and Reject id declared in the node's RULES section."""
+    body = read(node["path"], "T2")["body"]
+    return [m.group(1) for m in (RULE_ID.match(l) for l in _section_of(body, "RULES").splitlines()) if m]
+
+
+def covers(node: dict) -> dict:
+    """`{rule_id: [check_id, ...]}` — parsed from the CHECKS section, keyed by rule."""
+    body = read(node["path"], "T2")["body"]
+    out = {}
+    for line in _section_of(body, "CHECKS").splitlines():
+        match = COVERS_IN_CHECK.match(line.strip())
+        if not match:
+            continue
+        check = match.group(1)
+        for rule in (r.strip() for r in match.group(2).split(",")):
+            if rule:
+                out.setdefault(rule, []).append(check)
+    return out
+
+
+def bind(node: dict, reported: dict) -> tuple:
+    """`(proven, unproven)` — a rule is proven only by a check the runner reported PASSING.
+
+    `reported` is `{check_id: "pass" | "fail"}` from `extract_ids`. A check that is absent
+    did not run; a check that failed did not prove. Neither counts.
+    """
+    proven, unproven = {}, {}
+    for rule, checks in covers(node).items():
+        passing = [c for c in checks if reported.get(c) == "pass"]
+        (proven if passing else unproven)[rule] = passing or checks
+    return proven, unproven
+
+
+def unbound(node: dict, reported: dict) -> list:
+    """Rules with no passing check — declared but unproven. The honest gap."""
+    mapped = covers(node)
+    proven, _ = bind(node, reported)
+    return sorted(r for r in rules_of(node) if r not in proven or not mapped.get(r))
+
+
+def extract_ids(path) -> dict:
+    """`{check_id: "pass"|"fail"}` from junit-xml. Unreadable output yields `{}`, never a guess.
+
+    junit-xml only at v1.0 (amendment A1). A runner that emits nothing usable leaves the
+    receipt at a weaker kind, which A24 requires it to say out loud.
+    """
+    import xml.etree.ElementTree as ET
+    try:
+        root = ET.parse(str(path)).getroot()
+    except (OSError, ET.ParseError):
+        return {}
+    out = {}
+    for case in root.iter("testcase"):
+        name = case.get("name")
+        if not name:
+            continue
+        bad = any(case.find(tag) is not None for tag in ("failure", "error"))
+        out[name] = "fail" if bad else "pass"
+    return out

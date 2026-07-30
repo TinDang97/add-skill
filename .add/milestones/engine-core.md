@@ -33,8 +33,8 @@ verified: []
 ## CARD
 goal: ten verbs, ≤2,400 lines, stdlib only, shipped inside the skill — and dogfooded here
 shape: five waves; each wave's line budget is asserted in CI so overflow shows at wave one
-state: wave 2 CLOSED — e1–e4, e6 gated PASS (89 checks) · engine 812/2400 · projected 1919/2400, slack 481
-next: wave 3 — e5 `brief` (267) ∥ e7 `receipts+learn` (240). All 12 M1 nodes now exist; the DAG resolves
+state: wave 3 half CLOSED — e7, e12 gated PASS (113 checks) · engine 1038/2400 · projected 1745/2400, slack 655
+next: e5 `brief` (267) closes wave 3, then wave 4 e8 `doctor` (200). F2 recorded: 67/133 rules proven
 
 ## SCOPE
 In:  `add/scripts/add.py` (the engine) · its templates, profiles and method personas ·
@@ -58,12 +58,51 @@ findings:
     while conforming to what the format actually says. One of the two is wrong. Left OPEN
     rather than fixed inline: both files are sensitive paths, and widening a grammar so the
     author's own nodes pass is the move A17 exists to prevent. Needs its own gated task
+  - **F2 · 65 rules are LABELLED, not proven — measured by e12 on this bundle, 2026-07-30.**
+    Binding every gated task's `covers:` labels against the set of check IDs that exist in the
+    suites: **67 of 133 rules proven.** Of the 66 that are not, **65 are claimed by check IDs that
+    do not exist anywhere**, across nine M0 tasks — `align-standards-citations` (6 fictional IDs),
+    `define-authority-rules` (8), `define-compat-contract` (11), `define-entity-model` (5),
+    `define-evidence-binding` (10), `define-log-rotation` (7), `define-read-protocol` (7),
+    `define-scale-rules` (3), `define-task-schema` (5) — 61 distinct names in total. The remaining
+    1 is an honest gap: a Must in `build-worked-example` with no `covers:` at all.
+    Worked example: `define-entity-model` cites `test_minimum_bundle`; the suite contains
+    `test_minimal_bundle_conforms`. The others cite tests never written.
+    A second, worse shape sits inside the same finding: `define-scale-rules` has **no RULES
+    section at all**, and its three checks cite `G1`/`G2`/`G3` — a rule-ID namespace FORMAT does
+    not define. It declares proof over rules it never states, and the validator accepted it. So
+    `covers:` is unchecked in both directions: neither the check nor the rule had to exist.
+    **What is and is not wrong.** The M0 *rules* are sound and `validate_bundle.py` does enforce
+    many of them — 18 real checks passed and M0's CLOSE openly declared that one shared receipt
+    (`build-worked-example.d/runs/3.md`) earned the milestone, so the gate decision was defensible
+    in intent. What was false is the narrower claim each node made in its CHECKS section: that
+    *these named checks* proved *these numbered Musts*. The honest A24 kind for those nine tasks
+    was `artifact-hash`, not `test-ids`.
+    **Disposition (human:tindang, 2026-07-30): recorded, nothing reopened.** No gated node is
+    rewritten — a gate was taken against those claims, and editing the claim afterwards erases
+    what was accepted (R:ERASE, §3.6). M0 stays closed. This is A15's own finding, measured on the
+    project that raised it, and it stands as the evidence for A15/A16 rather than as debt
+  - **F3 · `run` writes a receipt and never binds it to the task — found 2026-07-30, at e12's
+    gate.** `add.run` creates the Run node correctly and returns `next: add gate <slug>`, but
+    appends nothing to the task's `verified[]`. That list is the ONLY thing `done()` and `since()`
+    read, so the receipt exists on disk while the record of it existing does not. Every
+    `process:pytest` / `process:run` stamp in this bundle — six of them, e1–e4, e6, e7 — was
+    written by hand; e12's is the first that was not, which is how the gap became visible.
+    Two consequences worth stating plainly: `status --since` under-reports every machine act, and
+    this milestone's EXIT criterion "`.add/` is driven by the engine, not by hand" is **not yet
+    met** on the receipt→stamp link, though it reads as though it were. The fix is a few lines
+    inside `run`, and it is deliberately NOT being made here: `run` is e7's contract and e7 is
+    gated. Assigned to `e8 build-doctor`, which must also carry the check that catches it —
+    a task whose `verified[]` cites no receipt while `<slug>.d/runs/` is non-empty
 risks:
-  - **A22 is specified, not implemented.** `e7` owes the content digest. Until then no
-    receipt this engine writes can be trusted fresh across a checkout — the exact defect
-    the M0 kill-test exposed
-  - **A24 rests on test-ID extraction working in tools we do not control.** If
-    `ids: unknown` is the common case in real runners, `e12` reopens A15
+  - ~~**A22 is specified, not implemented.**~~ **RETIRED at e7, 2026-07-30.** `scope_digest`
+    hashes git blobs over `scope:`; the M0 kill-test was run in reverse — `git worktree add`
+    rewrote every mtime and the receipt still read FRESH, while a one-byte edit read STALE
+  - ~~**A24 rests on test-ID extraction working in tools we do not control.**~~ **ANSWERED at
+    e12, 2026-07-30.** `test-ids` is reachable: e12's own receipt earned it with 10/10 IDs from
+    junit-xml. The residual risk is narrower than stated — junit-xml is the only supported format
+    at v1.0 (A1's cut), so a runner that emits nothing parseable leaves every receipt at
+    `command-exit`. That degradation is now honest and labelled, which is what A24 required
   - **P8 bites hardest here.** Every engine task's scope is the engine, and the engine is a
     sensitive path — so A17 pins all twelve to `human`. M1 either costs twelve human gates
     or P8 gets decided. Decide it with one gate's evidence in hand, not zero
@@ -78,7 +117,8 @@ risks:
 - [ ] `.add/` in this repo is driven by the engine, not by hand              (← package-in-skill)
 - [ ] `python3 add/scripts/add.py` runs from a clean checkout with zero install (← package-in-skill)
 - [ ] every FORMAT rule the validator enforces still holds after the engine writes (← build-doctor)
-- [ ] a receipt survives a fresh worktree checkout (A22 implemented, not just specified) (← build-receipts-learn)
+- [x] a receipt survives a fresh worktree checkout (A22 implemented, not just specified) (← build-receipts-learn)
+      ↳ `test_receipt_survives_worktree`, gated 2026-07-30. mtime rewritten, digest unchanged, FRESH
 
 ## AMENDMENTS
 ### A1 · 2026-07-29 · line-budget rebase (human:tindang)

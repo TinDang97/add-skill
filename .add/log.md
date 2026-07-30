@@ -8,6 +8,21 @@
      and are no longer rendered here. Nothing was deleted — a rendered journal is truncated by
      changing what it renders, not by editing it. What follows is M1 only. -->
 
+## 2026-07-30
+
+- claude/opus-5 · milestones/engine-core · F3 recorded — `run` writes a receipt but never appends the stamp; all six earlier run stamps were hand-written. Assigned to e8
+- claude/opus-5 · tasks/build-evidence-binding · run stamp appended BY HAND (F3); CARD `next:` corrected by hand — `render_card` repairs only `beat:`
+- human:tindang · tasks/build-evidence-binding · gate PASS — stamped by the engine at authority `human` (A17: sensitivity security)
+- claude/opus-5 · milestones/engine-core · F2 recorded — 67/133 rules proven; 65 claimed by 61 check IDs that do not exist, across 9 M0 tasks. Recorded, nothing reopened
+- claude/opus-5 · tasks/build-evidence-binding · CHECKS corrected BEFORE the gate — one fictional ID in five, replaced by the 10 real ones
+- process:run · tasks/build-evidence-binding · receipt 1 — 10/10 pass, **kind test-ids, ids 10/10 reported** — the first receipt to earn A24's top rung
+- claude/opus-5 · milestones/engine-core · A24 risk ANSWERED at e12; A22 risk RETIRED at e7
+- human:tindang · tasks/build-receipts-learn · gate PASS — the M0 kill-test run in reverse: worktree rewrote every mtime, receipt still FRESH
+- process:pytest · tasks/build-receipts-learn · receipt 1 — 14/14 pass, A22 implemented, not merely specified
+- claude/opus-5 · add/scripts/add.py · fixed a dishonest receipt: `kind` was derived from the scope digest, so a bare command claimed `test-ids` with no IDs
+- claude/opus-5 · tasks/build-receipts-learn · M3 corrected before BUILD — "run never executes" contradicted specs/system; the prohibition is on the engine's own initiative
+- claude/opus-5 · tasks/build-receipts-learn · opened — wave 3, budget 240 lines wc -l
+
 ## 2026-07-29
 
 - claude/opus-5 · milestones/engine-core · seven remaining M1 task nodes created BY THE ENGINE; the DAG resolves with no unresolved edges
