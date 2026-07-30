@@ -40,9 +40,10 @@ DEPTH_KEYS = ("quick", "standard|deep")
 FENCE = re.compile(r"```[^\n]*\n(.*?)```", re.DOTALL)
 
 
-def format_section(number: str) -> str:
+def format_section(number: str, text: str | None = None) -> str:
     """The body of one numbered FORMAT section, heading exclusive."""
-    text = FORMAT.read_text(encoding="utf-8")
+    if text is None:
+        text = FORMAT.read_text(encoding="utf-8")
     start = re.search(rf"^#+ {re.escape(number)} · .*$", text, re.MULTILINE)
     if not start:
         return ""
@@ -51,7 +52,7 @@ def format_section(number: str) -> str:
     return rest[: nxt.start()] if nxt else rest
 
 
-def format_stated_grammar() -> dict[str, str]:
+def format_stated_grammar(text: str | None = None) -> dict[str, str]:
     """The grammar FORMAT §6.1 states, as {depth_key: pattern}.
 
     The contract this test imposes on FORMAT: §6.1 carries exactly ONE fenced block
@@ -59,9 +60,9 @@ def format_stated_grammar() -> dict[str, str]:
     prose metavariable is not a statement of a grammar — nothing can be checked against
     `R:<CODE>` — so a §6.1 that only says `R:<CODE>` states nothing and returns {}.
     """
-    for fence in FENCE.finditer(format_section("6.1")):
-        info = format_section("6.1")[: fence.start()].rsplit("```", 1)
+    for fence in FENCE.finditer(format_section("6.1", text)):
         block = fence.group(1)
+        # the marker may sit on the fence's info line or on a comment inside the block
         if "covers-grammar" not in (fence.group(0).splitlines()[0] + block):
             continue
         stated = {}
@@ -143,6 +144,49 @@ DISPUTED = {
     "R:T2FANOUT": ".add/tasks/build-brief-compiler.md",
     "R:MTIME2": ".add/tasks/build-receipts-learn.md",
 }
+
+
+# --- the machinery, proven on a fixture before it is trusted on FORMAT.md -----
+# A red test whose helper is simply broken proves nothing — it reports the helper, not
+# the format. These two are GREEN today and exist so that the reds below are known to be
+# statements about FORMAT.md and the validator, not about this file.
+
+
+def test_grammar_extractor_is_functional():
+    """Given a §6.1 that DOES state the grammar, the extractor reads it.
+
+    Deliberately uses patterns matching neither candidate resolution, so this fixture
+    cannot be mistaken for a preference about the outcome.
+    """
+    fixture = (
+        "## 6 · Depth\nprose\n\n"
+        "### 6.1 · What `covers:` refers to, by depth\n\n"
+        "prose about `R:<CODE>`\n\n"
+        "```text\n"
+        "# covers-grammar — the ONE statement\n"
+        "quick           = \\A(FIXTURE_Q)\\Z\n"
+        "standard | deep = \\A(FIXTURE_S)\\Z\n"
+        "```\n\n"
+        "## 7 · Prompts\n"
+    )
+    stated = format_stated_grammar(fixture)
+    assert stated == {
+        "quick": r"\A(FIXTURE_Q)\Z",
+        "standard|deep": r"\A(FIXTURE_S)\Z",
+    }, stated
+    assert set(stated) == set(DEPTH_KEYS)
+
+
+def test_engine_pattern_is_extractable():
+    """The engine's ID alternation is readable, and it is the digit-admitting one.
+
+    This is the fact that makes F1 a three-way disagreement rather than a two-way one:
+    the engine already accepts what the validator rejects.
+    """
+    engine = engine_rule_pattern()
+    assert engine.match("M1") and engine.match("R:DRIFT")
+    assert engine.match("R:T2SCAN"), "expected the engine to admit digits"
+    assert not engine.match("R:lower") and not engine.match("X1")
 
 
 # --- test_grammar_stated_once · covers: M1, R:DRIFT ---------------------------
