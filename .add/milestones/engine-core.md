@@ -37,8 +37,8 @@ verified: []
 ## CARD
 goal: ten verbs, ≤2,400 lines, stdlib only, shipped inside the skill — and dogfooded here
 shape: five waves; each wave's line budget is asserted in CI so overflow shows at wave one
-state: wave 3 CLOSED — e5, e7, e12 gated PASS (136 checks) · engine 1256/2400 · projected 1956/2400, slack 444
-next: A4 added e13 `gate` (140) ∥ e14 `checks --sync` (90) ∥ e15 `covers grammar` (30). 15 tasks now
+state: e13 `gate` gated PASS by the GATE VERB — 8 of 10 verbs done · 161 checks · engine 1448/2400 · projected 2008/2400, slack 392
+next: e14 `checks --sync` (90) — e13's CHECKS drifted 12→25 inside one build, which is e14's whole case
 
 ## SCOPE
 In:  `add/scripts/add.py` (the engine) · its templates, profiles and method personas ·
@@ -146,7 +146,8 @@ risks:
 
 ## EXIT
 - [ ] ten verbs green, each built red-first, each ending in a `next:` line   (← every e-task)
-      ↳ 7 of 10 gated: parse · graph · init · new/freeze/done · status · run/learn · brief · bind
+      ↳ 8 of 10 gated: parse · graph · init · new/freeze/done · status · run/learn · brief · bind · gate
+      ↳ remaining: `doctor` (e8) · the CLI surface (e11)
 - [ ] engine ≤ 2,400 lines **`wc -l`**, asserted in CI from wave one          (← build-durability)
 - [ ] every per-task line budget is asserted in the SAME unit as the ceiling  (← amendment A1)
 - [ ] consumed + Σ(remaining allocations) ≤ 2,400 at every gate               (← amendment A3)

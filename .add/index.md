@@ -48,7 +48,7 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 - [the next: line — one affordance, every verb](tasks/build-hints-layer.md) — `direction` · `standard` · `mechanical`
 - [durability — CI, the budget assertion, and the failure modes](tasks/build-durability.md) — `direction` · `standard`
 - [package the engine inside the skill directory](tasks/package-in-skill.md) — `direction` · `standard`
-- [gate — the verdict, its three refusals, and the quick lane](tasks/build-gate-verb.md) — `direction` · `standard` · `security`
+- [gate — the verdict, its three refusals, and the quick lane](tasks/build-gate-verb.md) — `done` · `standard` · `security`
 - [CHECKS compiled from the suite, not authored beside it](tasks/compile-checks-from-suite.md) — `direction` · `standard` · `architecture`
 - [reconcile the covers: grammar — FORMAT §6.1 vs the validator](tasks/resolve-covers-grammar.md) — `direction` · `standard` · `security`
 - [Define the entity model and slug rules](tasks/define-entity-model.md) — `done` · `standard`

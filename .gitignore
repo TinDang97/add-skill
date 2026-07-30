@@ -10,3 +10,6 @@ build/
 *.egg-info/
 .serena/
 tmp/
+
+# agent worktrees — transient, and each is its own git repo
+.claude/worktrees/

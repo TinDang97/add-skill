@@ -932,6 +932,15 @@ def run(root, cid: str, command: list, cwd=None, timeout: int = RUN_TIMEOUT, jun
     # both to the presence of a digest (as this first did) claims proof that does not exist.
     # A24's ladder is climbed only with real IDs (e12). No report, no promotion.
     ids = extract_ids(junit) if junit else {}
+    # A24 needs the ID NAMES, not a count: `gate` binds the node's `covers:` against what the
+    # runner reported, and "2/2 reported" cannot be bound to anything. Recording every ID of a
+    # 113-test suite would bloat the receipt, so this records exactly the evidence the node's
+    # own claims need — the IDs it cites that passed — plus EVERY failure, which is always
+    # relevant whether the node cites it or not.
+    cited = {c for ids_ in covers(read(node["path"], "T2") if node else {}).values() for c in ids_} \
+        if node else set()
+    passed = sorted(i for i, v in ids.items() if v == "pass" and i in cited)
+    failed = sorted(i for i, v in ids.items() if v != "pass")
     receipt = {"kind": "test-ids" if ids else "command-exit",
                "ids": f"{sum(v == 'pass' for v in ids.values())}/{len(ids)} reported" if ids else "unknown",
                "exit": exit_code,
@@ -942,10 +951,19 @@ def run(root, cid: str, command: list, cwd=None, timeout: int = RUN_TIMEOUT, jun
             f'computation: "{" ".join(str(c) for c in command)}"\n'
             f"receipt:\n" + "".join(f"  {k}: {v!r}\n" if k in ("stdout", "note") else f"  {k}: {v}\n"
                                     for k, v in receipt.items()) +
+            ("  passed:\n" + "".join(f"    - {i}\n" for i in passed) if passed else "") +
+            ("  failed:\n" + "".join(f"    - {i}\n" for i in failed) if failed else "") +
             ("  scope_digest:\n" + "".join(
                 f'    - {{ path: {d["path"]}, blob: "{d["blob"]}" }}\n' for d in digest) if digest else "") +
             f"{_stamp('process:run')}\n---\n")
     write(runs / f"{n}.md", body)
+    receipt = dict(receipt, passed=passed, failed=failed, scope_digest=digest)  # F3: the returned
+    # copy is the receipt, digest included — a caller passing it to `fresh()` must get the truth.
+    cid_run = "/" + str((runs / f"{n}.md").relative_to(root))
+    # F3: bind the receipt to the task. A receipt no stamp points at is unreachable evidence.
+    _transition(root, cid, appends=[("verified",
+        f'{{ by: "process:run", at: {_today()}, act: run, authority: process, '
+        f'outcome: {"PASS" if exit_code == 0 else "FAIL"}, receipt: {cid_run} }}')])
     return {"path": runs / f"{n}.md", "receipt": receipt, "computation": " ".join(str(c) for c in command),
             "note": f"receipt {n} recorded (exit {exit_code})\nnext: add gate {slug}"}
 
@@ -999,6 +1017,25 @@ def _section_of(body: str, heading: str) -> str:
         if inside:
             out.append(line)
     return "".join(out)
+
+
+PLACEHOLDER = re.compile(r"<[a-z_][^>]*>")
+
+
+def placeholders_in(node: dict) -> list:
+    """Template tokens still standing in a node's RULES or CHECKS.
+
+    `new` ships `- M1 <the rule that must hold>` and `- <test_name> · covers: M1`. Those parse as
+    a real rule and a real check, so an unauthored node refuses at the gate with "M1 has no
+    reported passing check" — true, and it points at RISK-ACCEPTED when the fix is to author the
+    node. Naming the placeholder turns a confusing refusal into an actionable one (M4).
+    """
+    found = []
+    for heading in ("RULES", "CHECKS"):
+        for line in _section_of(node.get("body") or "", heading).splitlines():
+            if line.startswith("- ") and PLACEHOLDER.search(line):
+                found.append(line.strip())
+    return found
 
 
 def rules_of(node: dict) -> list:
@@ -1254,3 +1291,158 @@ def brief(root, cid: str, phase: str = None, for_subagent: bool = False,
 
     return {"text": text, "bytes": size, "hash": digest, "nodes": nodes,
             "budget": budget, "degraded": degraded, "phase": phase, "depth": depth}
+
+
+# ============================================ gate — the verdict, and its refusals (e13)
+#
+# This verb should have existed since e4. Every gate in this project's history was recorded by
+# hand-appending a stamp through the private `_transition`, so none of the three refusals
+# PROPOSAL specifies for `gate` had ever run against anything.
+#
+# It is also where e12's M3 lands. That rule reads "`unbound` is part of every gate's report" —
+# and it was gated PASS while no gate report existed. The rule was never wrong; it had nowhere
+# to be true.
+#
+# Refusing is not guarding (law 3). A refusal never stops a human from writing the stamp
+# themselves with their own authority; it stops the ENGINE from manufacturing a record that its
+# own evidence does not support. The measured case for the strict form: run against this
+# project's own history, M2 would have refused 8 gates — exactly the 8 tasks F2 found
+# labelled-but-not-proven, and zero of the 7 well-bound M1 tasks. It fires on the defect and
+# nothing else, so `RISK-ACCEPTED` with a recorded reason is the only degradation needed.
+
+VERDICTS = ("PASS", "RISK-ACCEPTED", "HARD-STOP")
+
+
+def orphans(root) -> list:
+    """Receipt nodes that no `verified[]` stamp points at — unreachable evidence (R:ORPHAN)."""
+    root = Path(root)
+    cited = set()
+    for node in scan(root).values():
+        for stamp in ((node["fm"] or {}).get("verified") or []):
+            if isinstance(stamp, dict) and stamp.get("receipt"):
+                cited.add(str(stamp["receipt"]).lstrip("/"))
+    return ["/" + str(p.relative_to(root)) for p in sorted(root.rglob("runs/*.md"))
+            if str(p.relative_to(root)) not in cited]
+
+
+def latest_receipt(root, cid: str) -> tuple:
+    """`(receipt_dict, cid)` for the newest receipt of a task, or `(None, None)`."""
+    root = Path(root)
+    slug = cid.rsplit("/", 1)[-1][:-3]
+    runs = sorted((root / f"tasks/{slug}.d/runs").glob("*.md"),
+                  key=lambda p: int(p.stem) if p.stem.isdigit() else 0)
+    if not runs:
+        return None, None
+    fm = read(runs[-1], "T0")["fm"] or {}
+    return fm.get("receipt"), "/" + str(runs[-1].relative_to(root))
+
+
+def gate(root, cid: str, verdict: str, by: str, authority: str = None,
+         reason: str = None) -> tuple:
+    """Record a verdict, or refuse and say what would make it pass. `(ok, note)`."""
+    root = Path(root)
+    slug = cid.rsplit("/", 1)[-1][:-3]
+
+    def refuse(why: str, fix: str) -> tuple:
+        return False, f"cannot record `{verdict}` — {why}\nnext: {fix}"
+
+    if verdict not in VERDICTS:
+        return refuse(f"unknown verdict {verdict!r}",
+                      f"add gate {slug} <{' | '.join(VERDICTS)}>")
+    graph = scan(root)
+    if cid not in graph:
+        return refuse(f"no such node: {cid}", "add status")
+    if verdict != "PASS" and not reason:
+        return refuse(f"a {verdict} with no reason is a PASS in disguise",
+                      f'add gate {slug} {verdict} --reason "<why>"')
+
+    node_body = lambda n: read(n["path"], "T2")["body"]
+    receipt, receipt_cid = latest_receipt(root, cid)
+    if receipt is None:
+        return refuse("no receipt has been recorded", f"add run {slug} -- <cmd>")
+
+    # Refusal 1 (M1) — a verdict over changed code is evidence of nothing.
+    #
+    # A node declaring no `scope:` has nothing to be stale ABOUT, and §3d's quick and doc lanes
+    # both allow one. That is not-applicable, not failed — but it must be SAID, and it must not
+    # become a way to dodge freshness: scope declared with no digest recorded stays a refusal.
+    declared_scope = (graph[cid]["fm"] or {}).get("scope") or []
+    if not declared_scope:
+        # A CARD claiming a scope the frontmatter lacks is worse than an honestly unscoped node:
+        # the CARD is what a human reads, while `scope_digest` and A17's path floor both match
+        # against frontmatter. This gated e13 itself with freshness silently skipped.
+        card_scope = [l for l in card_of(node_body(graph[cid])).splitlines()
+                      if l.startswith("scope:") and l.partition(":")[2].strip()]
+        if card_scope and verdict == "PASS":
+            return refuse(f"the CARD claims a scope the frontmatter does not declare "
+                          f"({card_scope[0].strip()}) — freshness and A17's path floor both read "
+                          f"frontmatter, so both were silently skipped",
+                          f"add scope: to {slug}'s frontmatter, then add run {slug} -- <cmd>")
+        freshness = "freshness: n/a — the node declares no `scope:`"
+    else:
+        ok, why = fresh(receipt, root.parent)
+        if not ok and verdict == "PASS":
+            return refuse(f"the receipt is stale — {why}", f"add run {slug} -- <cmd>")
+        freshness = f"freshness: {'fresh' if ok else 'STALE'} — {why}"
+
+    node = read(graph[cid]["path"], "T2")
+    stubs = placeholders_in(node)
+    if stubs and verdict == "PASS":
+        return refuse("the node still carries template placeholders: " + " · ".join(stubs),
+                      f"author {slug}'s RULES and CHECKS, then add gate {slug} PASS")
+
+    # Refusal 2 (M2) — a Must proven by nothing is a label (A15). e12's M3, landing.
+    reported = {i: "pass" for i in (receipt.get("passed") or [])}
+    reported.update({i: "fail" for i in (receipt.get("failed") or [])})
+    gaps = unbound(node, reported)
+    if gaps and verdict == "PASS":
+        return refuse("these rules have no reported passing check: " + ", ".join(gaps),
+                      f'add gate {slug} RISK-ACCEPTED --reason "<why the gap is acceptable>"')
+
+    authority = authority_for(graph, cid)          # computed, never the caller's claim (M3)
+    digest = brief(root, cid)["hash"]              # A16 — the instructions that drove the work
+    stamp = (f'{{ by: "{by}", at: {_today()}, act: gate, authority: {authority}, '
+             f'outcome: {verdict}, receipt: {receipt_cid}, brief: "{digest}"'
+             + (f', reason: "{reason}"' if reason else "") + " }")
+    _transition(root, cid, appends=[("verified", stamp)])
+
+    if verdict == "PASS":
+        done(root, cid)
+        render_card(root, cid)
+        tail = f"{cid} is done"
+    else:
+        tail = f"{verdict} recorded; {slug} stays in `{(graph[cid]['fm'] or {}).get('status')}`"
+    note = (f"gate {verdict} recorded at authority `{authority}`"
+            + f"\n  {freshness}"
+            + (f"\n  unbound (reported, not blocking): {', '.join(gaps)}" if gaps else "")
+            + f"\n  brief {digest} · receipt {receipt_cid}\n{tail}\nnext: add status")
+    return True, note
+
+
+def quick(root, slug: str, title: str, cmd: list, by: str, cwd=None,
+          depth: str = "quick", **fields) -> tuple:
+    """§3d's quick lane: new + freeze + run + gate in ONE engine call.
+
+    Refused above `quick` depth. A one-call lane that works at `deep` is not a lane, it is a
+    bypass of every control this engine has.
+    """
+    if depth != "quick":
+        return False, (f"the one-call lane is `quick` depth only; this is `{depth}`"
+                       f"\nnext: add new task {slug} --depth {depth}")
+    root = Path(root)
+    cid, _ = new(root, "Task", slug, title=title, depth="quick", **fields)
+    # A quick task's evidence is its exit code, not a covers-bound suite (§3d: "rename a flag;
+    # add a log line"). The standard template's placeholder Musts would make the one-call lane
+    # unclosable by construction, so the quick body declares none.
+    path = root / cid.lstrip("/")
+    stub = read(path, "T2")
+    write(path, f"---\n{stub['raw']}\n---\n## CARD\ngoal: {title}\n"
+                f"beat: build · next: add run {slug} -- <cmd>\n\n"
+                f"## EVIDENCE\nreceipt: <runs/<n>.md>\ngate: <PASS>\n")
+    freeze(root, cid, by=by)
+    node = run(root, cid, cmd, cwd=cwd or root.parent)
+    if node["receipt"]["exit"] != 0:
+        return False, (f"the command exited {node['receipt']['exit']} — a red command earns no gate"
+                       f"\nnext: fix, then add run {slug} -- <cmd>")
+    ok, note = gate(root, cid, "PASS", by=by)
+    return ok, f"quick lane: {slug} opened, run and gated in one call\n{note}"

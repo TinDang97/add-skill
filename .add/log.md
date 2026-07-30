@@ -10,6 +10,14 @@
 
 ## 2026-07-30
 
+- human:tindang · tasks/build-gate-verb · gate PASS — recorded BY `add gate`: freshness fresh, brief sha256:7e7013b0, receipt 2. The first gate in this project not hand-appended
+- claude/opus-5 · tasks/build-gate-verb · CORRECTION — the first gate stamp was taken with freshness silently skipped: `new` ran without `scope=`, so frontmatter had no `scope:` while the CARD claimed one. Both stamps kept (§3.6)
+- process:run · tasks/build-gate-verb · receipt 2 — 25/25 pass, kind test-ids, freshness content, 25/25 cited IDs bound
+- claude/opus-5 · tasks/build-gate-verb · CHECKS recompiled from the suite — 12 authored lines against a suite that reached 25; every addition was found during the build
+- claude/opus-5 · add/scripts/add.py · F3 FIXED — `run` now records the cited ID names plus every failure, returns its digest, and appends its own stamp
+- claude/opus-5 · tasks/build-gate-verb · ⚠ resolved BEFORE build by measurement — a strict M2 would have refused 8 of this project's gates, all of them F2's, and none of the 7 well-bound M1 tasks
+- process:run · tasks/build-gate-verb · receipt 1 — 19/20 fail on absent `gate`/`orphans`/`quick`; the red-first record
+- claude/opus-5 · tasks/build-gate-verb · opened and frozen — wave 3b, budget 140 lines wc -l
 - claude/opus-5 · milestones/engine-core · amended A4 — three tasks added from a hand-work audit: e13 gate (140) · e14 checks --sync (90) · e15 covers grammar (30). Invariant 1956/2400, slack 444
 - claude/opus-5 · tasks/build-gate-verb, compile-checks-from-suite, resolve-covers-grammar · opened BY THE ENGINE — 15 M1 tasks, DAG resolves, 52 nodes / 156 edges / 0 cycles
 - claude/opus-5 · milestones/engine-core · F5 recorded — `new` never substituted `{slug}`; every node it created carries an unrunnable `next:` hint. Assigned to e9, which already declares R:FAKEHINT
