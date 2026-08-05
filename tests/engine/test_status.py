@@ -96,49 +96,15 @@ def test_next_names_the_blocking_gate(bundle):
     assert "gate" in out.lower(), "a task awaiting a gate produced no gate hint"
 
 
-# --------------------------------------------------------------------- --locate (M3)
-
-
-def test_locate_by_slug_fragment(bundle):
-    """covers: M3 — a partial slug is enough (goal 11: slugs easy to look up)."""
-    assert "/tasks/alpha-task.md" in add.locate(add.scan(bundle), "alpha")
-
-
-def test_locate_by_title_fragment(bundle):
-    """covers: M3 — a word from the title also finds it."""
-    found = add.locate(add.scan(bundle), "confirmation")
-    assert "/tasks/beta-task.md" in found
-
-
-# ---------------------------------------------------------------------- --graph (M1)
-
-
-def test_graph_is_per_milestone(bundle):
-    """covers: M1, R:UNBOUNDED — one milestone's DAG, never the whole bundle (A12)."""
-    add.new(bundle, "Milestone", "m-two", title="Milestone Two")
-    add.new(bundle, "Task", "gamma-task", title="Elsewhere", milestone="/milestones/m-two.md")
-
-    lines = "\n".join(add.graph_lines(add.scan(bundle), "/milestones/m-one.md"))
-    assert "alpha-task" in lines
-    assert "gamma-task" not in lines, "another milestone's task leaked into the graph"
-
-
-# ---------------------------------------------------------------------- --since (M4)
-
-
-def test_since_uses_stamps_not_mtime(bundle):
-    """covers: M4, R:MTIME — the M0 kill-test proved mtime worthless across a checkout.
-
-    Touching a file must change nothing. Recording a stamp must.
-    """
-    path = bundle / "tasks" / "alpha-task.md"
-    path.touch()
-    assert add.since(add.scan(bundle), "2026-07-29") == [], "mtime leaked into --since"
-
-    add.freeze(bundle, "/tasks/alpha-task.md", by="human:tindang")
-    rows = add.since(add.scan(bundle), "2026-07-29")
-    assert any("alpha-task" in str(r) for r in rows), "a recorded stamp was not reported"
-
+# --- WITHDRAWN 2026-08-05 by `cut-status-flags` (D-12) -------------------------------
+# Four checks lived here, proving `build-orient`'s M1, M3 and M4:
+#   test_locate_by_slug_fragment · test_locate_by_title_fragment
+#   test_graph_is_per_milestone  · test_since_uses_stamps_not_mtime
+# They were removed with the features they proved, not because they were wrong. e6's
+# node keeps those Musts exactly as its human gate accepted them (§3.6) — a gate records
+# what was accepted, never what still ships. The reason is in
+# `.add/tasks/cut-status-flags.md` under `## RETIRED`.
+# -----------------------------------------------------------------------------------
 
 # ------------------------------------------------- the drift e4 created (M5, R:SILENTDRIFT)
 

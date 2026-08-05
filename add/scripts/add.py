@@ -698,8 +698,6 @@ def done(root, cid: str) -> tuple:
 #
 # * **Bounded, always** (A12). Output must not grow with the bundle: 20 node lines and a
 #   count. A report that becomes a context hazard defeats the format it reports on.
-# * **Stamps, never mtime** (A22). The M0 kill-test proved mtime worthless across a
-#   checkout, so `--since` reads recorded acts.
 # * **Report, never block** (law 3). The one write here is `render_card`, and it repairs
 #   the contradiction e4's transition created rather than displaying it as current.
 
@@ -707,48 +705,6 @@ MAX_LINES = 20
 BEAT_KEYS = ("beat", "state")
 # What a cold reader needs, in order. `Run` is absent on purpose — see `status`.
 ORIENT_RANK = {"Project": 0, "Milestone": 1, "Task": 2, "Spec": 5, "Persona": 6, "Prompt": 7}
-
-
-def locate(graph: dict, term: str) -> list:
-    """Cids whose slug or title contains `term`. A human should never need a path."""
-    term = term.lower()
-    return sorted(cid for cid, n in graph.items()
-                  if term in cid.rsplit("/", 1)[-1][:-3].lower()
-                  or term in str((n["fm"] or {}).get("title", "")).lower())
-
-
-def graph_lines(graph: dict, milestone_cid: str) -> list:
-    """The DAG for ONE milestone. Never whole-bundle — that is the A12 hazard."""
-    node = graph.get(milestone_cid)
-    if node is None:
-        return [f"no such milestone: {milestone_cid}"]
-    members = list((node["fm"] or {}).get("tasks") or [])
-    # A task may be listed by the milestone, or may name the milestone itself. Honour both:
-    # `new` writes the back-reference, so a graph that read only `tasks:` would show nothing.
-    members += [c for c, n in graph.items()
-                if (n["fm"] or {}).get("milestone") == milestone_cid and c not in members]
-    out = [f"{milestone_cid}  {(node['fm'] or {}).get('title', '')}"]
-    for ref in sorted(set(str(m) for m in members)):
-        cid = _norm(milestone_cid, str(ref))
-        task = graph.get(cid)
-        if task is None:
-            out.append(f"  ? {ref}  (unresolved)")
-            continue
-        fm = task["fm"] or {}
-        deps = [str(d).rsplit("/", 1)[-1][:-3] for d in (fm.get("depends_on") or [])]
-        out.append(f"  {'x' if fm.get('status') == 'done' else 'o'} {cid.rsplit('/', 1)[-1][:-3]}"
-                   f"  [{fm.get('status', '?')}]" + (f"  <- {', '.join(deps)}" if deps else ""))
-    return out
-
-
-def since(graph: dict, date: str) -> list:
-    """`[(at, cid, act, by)]` from `verified[]` — recorded acts, never file mtimes (A22)."""
-    rows = []
-    for cid, node in graph.items():
-        for stamp in ((node["fm"] or {}).get("verified") or []):
-            if isinstance(stamp, dict) and str(stamp.get("at", "")) >= date:
-                rows.append((str(stamp.get("at")), cid, stamp.get("act"), stamp.get("by")))
-    return sorted(rows, reverse=True)
 
 
 def card_drift(graph: dict) -> list:
@@ -790,8 +746,7 @@ def render_card(root, cid: str) -> tuple:
     return True, f"{cid}: {key} {said} -> {status}\nnext: add status"
 
 
-def status(root, locate_term: str = None, milestone: str = None,
-           since_date: str = None, all: bool = False, check: bool = False) -> str:
+def status(root, all: bool = False, check: bool = False) -> str:
     """One bounded orientation report, ending in a runnable `next:` line.
 
     `check=True` adds the CARD-drift scan. It is OPT-IN because detecting drift requires
@@ -800,17 +755,6 @@ def status(root, locate_term: str = None, milestone: str = None,
     """
     graph = scan(root)
     out = []
-
-    if locate_term:
-        found = locate(graph, locate_term)
-        out += [f"· {c}" for c in found[:MAX_LINES]] or ["no match"]
-        return "\n".join(out + [f"next: add status --graph <milestone>"])
-    if milestone:
-        return "\n".join(graph_lines(graph, milestone) + ["next: add status"])
-    if since_date:
-        rows = since(graph, since_date)
-        out += [f"· {at}  {cid}  {act} by {by}" for at, cid, act, by in rows[:MAX_LINES]]
-        return "\n".join((out or [f"nothing recorded since {since_date}"]) + ["next: add status"])
 
     project = next((n for n in graph.values() if (n["fm"] or {}).get("type") == "Project"), None)
     out.append(f"{((project or {}).get('fm') or {}).get('title', Path(root).name)}"
