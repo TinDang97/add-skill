@@ -47,6 +47,10 @@ risks:
 - [ ] the same agent completes one standard task through direction → build → verify        (← prove-first-light)
 - [ ] every command it ran came from a `next:` line it was given, not from reading source  (← build-hints-layer)
 - [ ] the transcript is kept as the artifact `v8`, `v7` and `v0` are run against           (← prove-first-light)
+- [ ] cold resume: after a context wipe mid-standard-task, the agent reaches a correct
+      `next:` action in ≤3 turns (`add status` + one T2 read + git progress)               (← prove-first-light)
+- [ ] the census of this loop shows exactly ONE human stamp (the freeze) and ZERO
+      hand-written nodes — the counter-fact to finding 0d's 71%/33%                        (← prove-first-light)
 
 ## CLOSE
 evidence: <one row per task — <t-slug>: gate=<outcome> · checks=<n green> · residue=<none|note>>

@@ -55,6 +55,11 @@ risks:
 - [ ] every cookbook command and every `next:` template resolves to a real verb+flag (← assert-skill-conformance)
 - [ ] a cold agent in a repo with `.add/` and NO plugin still orients     (← write-first-contact-block)
 - [ ] the description fires on the query set and stays silent off it      (← write-trigger-surface · write-trigger-eval-set)
+- [ ] every gate renders as a card ≤15 lines, decidable in ≤30 s — ARC line (goal · done · plan)
+      + guided APPROVE with real alternatives, compressed from 2.5's gate-udd, rendered from
+      receipts never prose                                                 (← write-gate-ref)
+- [ ] the always-loaded surface is counted and printed in CI: SKILL.md lines + first-contact
+      block bytes, vs 2.5's ~14 KB floor                                   (← assert-skill-conformance)
 
 ## CLOSE
 evidence: <one row per task — <t-slug>: gate=<outcome> · checks=<n green> · residue=<none|note>>
