@@ -46,11 +46,11 @@ verified: []
 ## CARD
 goal: ten verbs, ≤2,400 lines, stdlib only, shipped inside the skill — and dogfooded here
 shape: five waves; each wave's line budget is asserted in CI so overflow shows at wave one
-state: ten verbs gated as FUNCTIONS · 13 of 22 · **no CLI exists** · e16 gated PASS (human),
-  F7/F12 closed · 0 info 0 error · 222 checks · engine 1896/2400 ·
+state: ten verbs gated as FUNCTIONS · 14 of 22 · **no CLI exists** · e16 and e17 gated PASS
+  (human), F7/F12/F17 closed · 0 info 0 error · 230 checks · engine 1921/2400 ·
   **projected 2511/2400 — 111 OVER, D-12 cut owed at e11 (A5, A6)**
-next: `refuse-red-command` (25) — F17, a PASS can still be recorded over a receipt whose command
-  exited non-zero
+next: the D-12 cut, or `ship-domain-profiles` — but see F19: the engine writes only two of the
+  three beats, so every brief compiled during BUILD is a direction brief
 
 ## SCOPE
 In:  `add/scripts/add.py` (the engine) · its templates, profiles and method personas ·
@@ -338,6 +338,33 @@ findings:
     input), and the gate is NOT reopened: the file is outside `scope:`, so no receipt claim is
     falsified. Recorded because the class is unowned — a contract change that weakens an
     assertion in a file the node does not declare has no detector anywhere in the engine
+  - **F19 · the engine can only represent two of the three beats — found 2026-08-05, freezing
+    e17.** `new` writes `status: direction` and `done` writes `status: done`. **No verb ever
+    writes `build` or `verify`.** `freeze` — the act whose entire meaning is "direction is
+    settled, start building" — appends a stamp and leaves the status untouched. Measured on this
+    bundle: 17 `direction`, 24 `done`, 1 `active`, and **zero** `build` or `verify`.
+    Three consequences, in rising order of seriousness:
+    1. a frozen node's CARD still reads `beat: direction · next: add freeze <slug>` — it tells
+       the reader to do the thing they just did. This is the AIDD-2.5 weakness the successor was
+       supposed to fix ("poor UX at gates / following AI work") reappearing in the successor.
+    2. `status`'s `waiting` list is `[c for c in active(graph) if status == "verify"]`, so it is
+       **permanently empty** and the `next: add gate <slug>` hint it exists to produce can never
+       fire. The engine never tells you a node is ready to gate.
+    3. the worst: `brief` derives its phase from status — `PHASE_OF.get(fm["status"], "build")`.
+       Since status is `direction` until the gate, **every brief compiled for a node under
+       construction is a DIRECTION brief.** Demonstrated on e17 itself while it sat frozen,
+       green, and awaiting its gate: `brief(...)["phase"] == "direction"`.
+    So the three-beat model — the method's core claim, with three prompt templates written for
+    it in `templates/prompts/` — has exactly one beat the engine can actually reach. The build
+    and verify templates have never been served to anything. That is not a bug in `freeze` so
+    much as a lifecycle nobody closed: `new` opens it, `done` closes it, and the middle was
+    left to a `status:` field that no verb advances.
+    **Owner OWED, and it should be decided WITH `load-prompt-templates` (x2, A5)** — that task
+    exists to serve the phase templates, and it will serve `direction` three times unless this
+    is fixed first. Sized at a glance: `freeze` sets `build`, `run` sets `verify`, ~4 lines. The
+    reason it is not folded into e17 is that e17's PLAN said "the smallest possible change to
+    one function" and a lifecycle fix is a second contract — F11's lesson about answering a
+    format question inside an engine task
 risks:
   - ~~**A22 is specified, not implemented.**~~ **RETIRED at e7, 2026-07-30.** `scope_digest`
     hashes git blobs over `scope:`; the M0 kill-test was run in reverse — `git worktree add`
