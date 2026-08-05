@@ -24,41 +24,54 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 ## Specs
 
 - [Domain](specs/domain.md) — `lens: ddd` — the method's own vocabulary
-- [System](specs/system.md) — `lens: sdd` — format, engine, skill
 - [Experience](specs/experience.md) — `lens: udd` — the CLI read by a human and an agent at once
-- [Quality](specs/quality.md) — `lens: tdd` — the two evaluation tracks
 - [Method](specs/method.md) — `lens: add` — beats, depth, cost, learning
+- [Quality](specs/quality.md) — `lens: tdd` — the two evaluation tracks
+- [System](specs/system.md) — `lens: sdd` — format, engine, skill
 
 ## Milestones
 
 - [Engine core](milestones/engine-core.md) — `active` — ten verbs, ≤2,400 lines, dogfooded here
+- [First light](milestones/first-light.md) — `direction`
 - [Format standard](milestones/format-standard.md) — `done` — ABF-1 + A1–A24, proven by a bundle that validates
+- [Skill surface](milestones/skill-surface.md) — `direction`
 
 ## Tasks
 
-- [Port OKF node I/O — read tiers and surgical writes](tasks/port-okf-parse.md) — `done` · `standard` · `architecture`
-- [Compile the graph — typed edges, the fragment resolver, derived activity](tasks/compile-graph.md) — `done` · `standard` · `architecture`
+- [Align ABF-1 with the OKF and ATG source texts](tasks/align-standards-citations.md) — `done` · `standard` · `architecture`
+- [no gate is entitled by an empty covers: set](tasks/bind-quick-lane.md) — `direction` · `standard` · `security`
+- [brief — compile a task's context, and nothing else](tasks/build-brief-compiler.md) — `done` · `standard` · `architecture`
+- [doctor — conformance and repair over the compiled graph](tasks/build-doctor.md) — `done` · `standard` · `architecture`
+- [durability — CI, the budget assertion, and the failure modes](tasks/build-durability.md) — `direction` · `standard` · `architecture`
+- [the covers: binding — a check that proves a rule, or says it cannot](tasks/build-evidence-binding.md) — `done` · `standard` · `security`
+- [gate — the verdict, its three refusals, and the quick lane](tasks/build-gate-verb.md) — `done` · `standard` · `security`
+- [the next: line — one affordance, every verb](tasks/build-hints-layer.md) — `direction` · `standard` · `mechanical`
 - [init — create a bundle from a profile](tasks/build-init-profiles.md) — `done` · `standard` · `architecture`
 - [new · freeze · done — the node transitions](tasks/build-node-verbs.md) — `done` · `standard` · `security`
 - [status — orientation, and the three flags A3 restored](tasks/build-orient.md) — `done` · `standard` · `architecture`
-- [brief — compile a task's context, and nothing else](tasks/build-brief-compiler.md) — `done` · `standard`
 - [run · learn — receipts, and the content-addressed freshness A22 owes](tasks/build-receipts-learn.md) — `done` · `standard` · `security`
-- [the covers: binding — a check that proves a rule, or says it cannot](tasks/build-evidence-binding.md) — `done` · `standard` · `security`
-- [doctor — conformance and repair over the compiled graph](tasks/build-doctor.md) — `done` · `standard` · `architecture`
-- [the next: line — one affordance, every verb](tasks/build-hints-layer.md) — `direction` · `standard` · `mechanical`
-- [durability — CI, the budget assertion, and the failure modes](tasks/build-durability.md) — `direction` · `standard`
-- [package the engine inside the skill directory](tasks/package-in-skill.md) — `direction` · `standard`
-- [gate — the verdict, its three refusals, and the quick lane](tasks/build-gate-verb.md) — `done` · `standard` · `security`
+- [Build the worked example and validator](tasks/build-worked-example.md) — `done` · `standard` · `mechanical`
 - [CHECKS compiled from the suite, not authored beside it](tasks/compile-checks-from-suite.md) — `done` · `standard` · `architecture`
-- [reconcile the covers: grammar — FORMAT §6.1 vs the validator](tasks/resolve-covers-grammar.md) — `done` · `standard` · `security`
-- [test IDs carry their file — a failing check cannot be recorded as passed](tasks/repair-evidence-ids.md) — `direction` · `standard` · `security`
-- [Define the entity model and slug rules](tasks/define-entity-model.md) — `done` · `standard`
-- [Define the task node schema](tasks/define-task-schema.md) — `done` · `standard`
+- [Compile the graph — typed edges, the fragment resolver, derived activity](tasks/compile-graph.md) — `done` · `standard` · `architecture`
 - [Define authority and evidence rules](tasks/define-authority-rules.md) — `done` · `standard` · `security`
-- [Define the read protocol and brief grammar](tasks/define-read-protocol.md) — `done` · `standard`
-- [Define the journal, its rotation, and the conformance codes](tasks/define-log-rotation.md) — `done` · `standard`
-- [Align ABF-1 with the OKF and ATG source texts](tasks/align-standards-citations.md) — `done` · `standard`
-- [Define scale rules for a long-running bundle](tasks/define-scale-rules.md) — `done` · `quick`
-- [Define the evolution contract, the amendment protocol, and the trust boundary](tasks/define-compat-contract.md) — `done` · `standard`
+- [Define the evolution contract, the amendment protocol, and the trust boundary](tasks/define-compat-contract.md) — `done` · `standard` · `architecture`
+- [Define the entity model and slug rules](tasks/define-entity-model.md) — `done` · `standard` · `architecture`
 - [Bind a gate to the checks its receipt actually observed](tasks/define-evidence-binding.md) — `done` · `deep` · `security`
-- [Build the worked example and validator](tasks/build-worked-example.md) — `done` · `standard` · gate PASS
+- [Define the journal, its rotation, and the conformance codes](tasks/define-log-rotation.md) — `done` · `standard` · `mechanical`
+- [an EXIT criterion names a promise, never a function](tasks/define-product-exit.md) — `direction` · `standard` · `architecture`
+- [Define the read protocol and brief grammar](tasks/define-read-protocol.md) — `done` · `standard` · `architecture`
+- [Define scale rules for a long-running bundle](tasks/define-scale-rules.md) — `done` · `quick` · `mechanical`
+- [Define the task node schema](tasks/define-task-schema.md) — `done` · `standard` · `architecture`
+- [brief compiles from a template file, not from code](tasks/load-prompt-templates.md) — `direction` · `standard` · `architecture`
+- [package the engine inside the skill directory](tasks/package-in-skill.md) — `direction` · `standard` · `architecture`
+- [Port OKF node I/O — read tiers and surgical writes](tasks/port-okf-parse.md) — `done` · `standard` · `architecture`
+- [a cold agent drives the loop from the skill directory alone](tasks/prove-first-light.md) — `direction` · `deep` · `architecture`
+- [test IDs carry their file — a failing check cannot be recorded as passed](tasks/repair-evidence-ids.md) — `direction` · `standard` · `security`
+- [status is the product, not a node listing](tasks/repair-status-surface.md) — `direction` · `standard` · `architecture`
+- [reconcile the covers: grammar — FORMAT §6.1 vs the validator](tasks/resolve-covers-grammar.md) — `done` · `standard` · `security`
+- [six profiles as data, and a lens set that is really closed](tasks/ship-domain-profiles.md) — `direction` · `standard` · `architecture`
+- [the CLAUDE.md block — the first link, and the agent-agnostic one](tasks/write-first-contact-block.md) — `direction` · `standard` · `architecture`
+- [SKILL.md — the loop, inline, under 200 lines](tasks/write-skill-core.md) — `direction` · `deep` · `architecture`
+- [the AI team — when to fan out, and what each agent returns](tasks/write-team-ref.md) — `direction` · `standard` · `mechanical`
+- [the query set that makes a description falsifiable](tasks/write-trigger-eval-set.md) — `direction` · `standard` · `mechanical`
+- [the description — what fires it, and what must not](tasks/write-trigger-surface.md) — `direction` · `standard` · `architecture`

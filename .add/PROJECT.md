@@ -11,9 +11,15 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 ---
 ## CARD
 goal: lean, trustworthy AI-driven development — ADD 3.0 on the ABF-1 file graph
-shape: FORMAT (M0) → engine (M1) → skill ∥ personas (M2/M3) → proof (M4) → ship (M5)
-state: M0 done (10/10 gated at `human` on one receipt) · M1 next · M2–M5 queued
-next: M1 `e1 port-okf-parse` — lift the frontmatter parser out of validate_bundle.py
+shape: honest evidence → a reachable engine → the walking skeleton → **a decision gate** → the
+  method → proof → ship. PROPOSAL v5 reordered this: the two results that could kill the project
+  now arrive in nine tasks instead of twenty-eight
+state: M0 done · M1 13 of 22, ten verbs gated as FUNCTIONS but **no CLI exists** · M1.5 `first-light`
+  and M2 `skill-surface` opened · e16 gated PASS: evidence IDs now name one test each, so a failing
+  or skipped check can no longer be recorded as passed · **six further trust-path defects found by
+  audit (A6)**, one owned, five OWED · line invariant **2511/2400, 111 over — D-12 cut owed at e11**
+next: M1 `refuse-red-command` (F17) — a PASS can still be recorded over a receipt whose command
+  exited non-zero, which is the last way a false green reaches the record
 
 ## Direction
 Distil AIDD-Book 2.5 — which scored a best-in-class 0.97 fidelity floor across six
