@@ -46,8 +46,41 @@ COMPILED_MARKER = "COMPILED BODY"
 EDGE_KEYS = {"depends_on", "needs", "tasks", "milestone", "relates_to", "task", "supersedes"}
 
 FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n?(.*)\Z", re.DOTALL)
-COVERS = re.compile(r"·\s*covers:\s*([^·]+?)\s*·")
 MD_LINK = re.compile(r"\]\(([^)\s]+\.md)\)")
+
+# FORMAT §6.1 — the legal `covers:` referents, by depth. Stated HERE, once, as module
+# constants rather than compiled inline where they are used: a grammar with no address
+# cannot be cited by a second oracle, and two oracles that cannot cite each other drift
+# (F1, open since M0). `tests/test_covers_grammar.py` holds these against the
+# `covers-grammar` block in FORMAT §6.1 and against the engine's `RULE_ID`.
+#
+# RESOLVED (e15, human:tindang 2026-07-30): widened to admit digits, matching the engine.
+# These two patterns are byte-identical to the `covers-grammar` block in FORMAT §6.1, and
+# `tests/test_covers_grammar.py::test_grammar_stated_once` asserts that equality rather
+# than trusting a human to re-check it.
+COVERS_QUICK = re.compile(r"\A(goal|G\d+)\Z")
+COVERS_RULE = re.compile(r"\A(M\d+|R:[A-Z0-9_]+)\Z")
+
+# A `covers:` referent is a field of a CHECKS list item (FORMAT §8.3), so it is matched
+# line-anchored and only inside that section. An unanchored scan of the whole body reads
+# `· covers: …` out of PLAN prose and then runs `[^·]+?` across newlines, which both
+# invents referents and swallows the real check lines behind them (observed on
+# tasks/build-evidence-binding.md: 4 of this bundle's 7 `covers_referent` lines).
+# The engine's `COVERS_IN_CHECK` is anchored the same way, for the same reason.
+COVERS_IN_CHECK = re.compile(r"^-\s+\S+\s+·\s*covers:\s*([^·\n]+?)\s*·", re.MULTILINE)
+SECTION = "## "
+
+
+def section_of(body: str, name: str) -> str:
+    """The body of one `## <name>` section, heading exclusive, "" when absent."""
+    out, collecting = [], False
+    for line in body.splitlines():
+        if line.startswith(SECTION):
+            collecting = line[len(SECTION) :].strip() == name
+            continue
+        if collecting:
+            out.append(line)
+    return "\n".join(out)
 
 
 # --------------------------------------------------------------------------- parsing
@@ -192,12 +225,8 @@ class Scan:
             # FORMAT §6.1 — what `covers:` may refer to, by depth.
             depth = fm.get("depth")
             if fm.get("type") == "Task" and isinstance(depth, str):
-                pattern = (
-                    re.compile(r"\A(goal|G\d+)\Z")
-                    if depth == "quick"
-                    else re.compile(r"\A(M\d+|R:[A-Z_]+)\Z")
-                )
-                for group in COVERS.findall(body):
+                pattern = COVERS_QUICK if depth == "quick" else COVERS_RULE
+                for group in COVERS_IN_CHECK.findall(section_of(body, "CHECKS")):
                     for key in (k.strip() for k in group.split(",")):
                         if key and not pattern.match(key):
                             self.find(

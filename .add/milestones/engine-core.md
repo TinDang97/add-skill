@@ -1,0 +1,736 @@
+---
+type: Milestone
+title: Engine core
+goal: >-
+  all ten verbs are green under red/green TDD, in ≤1,550 CODE lines of Python stdlib
+  (D-15 — the unit and the ceiling both moved, see A7) shipped inside the skill
+  directory, and this repo's own `.add/` runs on them
+status: active
+stage: mvp
+depth: deep
+tasks:
+  - /tasks/port-okf-parse.md
+  - /tasks/compile-graph.md
+  - /tasks/build-init-profiles.md
+  - /tasks/build-node-verbs.md
+  - /tasks/build-brief-compiler.md
+  - /tasks/build-orient.md
+  - /tasks/build-receipts-learn.md
+  - /tasks/build-evidence-binding.md
+  - /tasks/build-doctor.md
+  - /tasks/build-hints-layer.md
+  - /tasks/build-durability.md
+  - /tasks/package-in-skill.md
+  - /tasks/build-gate-verb.md
+  - /tasks/compile-checks-from-suite.md
+  - /tasks/resolve-covers-grammar.md
+  - /tasks/repair-evidence-ids.md
+  - /tasks/ship-domain-profiles.md
+  - /tasks/load-prompt-templates.md
+  - /tasks/repair-status-surface.md
+  - /tasks/bind-quick-lane.md
+  - /tasks/define-product-exit.md
+  - /tasks/refuse-red-command.md
+  - /tasks/cut-status-flags.md
+depends_on:
+  - /milestones/format-standard.md
+generated: { by: claude/opus-5, at: 2026-07-29 }
+ratified: []
+amended:
+  - { by: "human:tindang", at: 2026-07-29, authority: human, reason: "A1 line-budget rebase — the twelve per-task allocations were written in code lines while the 2,400 ceiling is wc -l. Re-derived in the ceiling's unit; 660 code lines of surface pre-booked as cuts. See ## AMENDMENTS" }
+  - { by: "human:tindang", at: 2026-07-29, authority: human, reason: "A2 — A1's falsifier was a ratio between two estimates, so it fired at e2 while its conclusion was false. Restated as one measurable: cumulative consumed vs cumulative allocated, checked at every gate. A1 left unedited per §3.6" }
+  - { by: "human:tindang", at: 2026-07-29, authority: human, reason: "A3 — restored --locate, --graph and status --since (~247 lines) into e6 after three consecutive under-runs left +301 margin; restated the invariant as consumed + remaining allocations <= 2400, because A2's was one-directional and generated no signal while winning" }
+  - { by: "human:tindang", at: 2026-07-30, authority: human, reason: "A4 — three tasks added from an audit of hand-work across waves 2 and 3: gate (never existed, though D-2 counts it in the ten and all 11 gates were hand-appended through a private function), CHECKS compiled from the suite (F2s defect class made structurally impossible), and F1s covers grammar. 260 lines allocated; invariant 1956/2400, slack 444. See ## AMENDMENTS" }
+  - { by: "human:tindang", at: 2026-07-30, authority: human, reason: "A5 — PROPOSAL v5. Five tasks added from a promise audit (x1 profiles, x2 prompt templates, x3 status surface, x6 quick-lane binding, x5 product EXIT); e11 re-budgeted 80 -> 200 because no CLI entry point exists at all. The A3 invariant BREACHES at 2472/2400 and the D-12 cut is owed at e11s freeze. See ## AMENDMENTS" }
+  - { by: "human:tindang", at: 2026-07-30, authority: human, reason: "A6 — one task added from an engine audit taken at e16: refuse-red-command closes F17, where gate records PASS over a receipt whose command exited non-zero. Five further findings recorded WITHOUT owners (F11 checks --sync fabricates citations, F13 append_item splices wrapped stamps, F14 fresh is blind to files added under a glob, F15 A17s floor is escaped by a broader scope, F16 the brief stamp names a brief never issued, F18 a scope excursion turned an assertion vacuous — fixed at once, class unowned) — assigning them before the D-12 cut would book work against a projection. 25 lines allocated. See ## AMENDMENTS" }
+  - { by: "human:tindang", at: 2026-08-05, authority: human, reason: "A7 — D-12 fired in full after e11 was MEASURED (cut-status-flags withdrew --find/--graph/--since, -56 lines). It still did not fit at 2463/2400, so D-15 restates the ceiling in CODE lines and RAISES it to 1550: a faithful conversion is 1440 and the projection is 1485, so the conversion alone creates no room. D-6 is BROKEN knowingly rather than dressed up as a unit change. Projected 1485/1550, slack 65. All allocations rewritten in the new unit IN THE NODES (F20). See ## AMENDMENTS" }
+verified: []
+---
+## CARD
+goal: ten verbs, ≤1,550 CODE lines (D-15), stdlib only, shipped inside the skill — and dogfooded here
+shape: five waves; each wave's line budget is asserted in CI so overflow shows at wave one
+state: ten verbs gated as FUNCTIONS · 15 of 23 · **no CLI exists, but it is now MEASURED**
+  (208 wc -l / 138 code) · e16/e17/e18 gated PASS (human) · F7/F12/F17 closed · 0 info 0 error ·
+  236 checks · engine **1865 wc -l / 1114 code** · **D-12 fired, D-15 re-units the ceiling:
+  projected 1485/1550 CODE, slack 65 (A7)**
+next: `build-durability` — its CI job is the only thing that stops the invariant being
+  hand-maintained in three places, which is how F20 hid a 120-line disagreement
+
+## SCOPE
+In:  `add/scripts/add.py` (the engine) · its templates, profiles and method personas ·
+     the ten verbs and their flags · red/green tests for every verb · the in-skill
+     packaging that makes `python3 <skill>/scripts/add.py` work with zero install
+Out: `SKILL.md` and its references (M2) · persona authoring beyond schema validation (M3)
+     · the evals (M4) · `plugin.json` and the identity contract (M5) · any 2.5 migration
+
+## GROUND
+touches: `add/scripts/add.py` · `tests/engine/**` · `.add/**` (as the dogfood bundle)
+anchors: FORMAT.md is frozen at v1.3-draft and the engine compiles against it, not around
+  it · `scripts/validate_bundle.py` is the proven T0 parser and the conformance oracle —
+  every rule it already enforces must still hold when the engine writes the bundle
+honors: specs/system#decisions-that-bind (notary not guard · atomic single-file replace ·
+  records but never executes · no undo, git is the log · every verb ends with `next:`) ·
+  specs/method#decisions-that-bind (depth dial, authority ladder, T2 is single-node)
+findings:
+  - **F1 · spec/implementation mismatch, unresolved by design.** FORMAT §6.1 states the
+    `covers:` grammar as `R:<CODE>`; `scripts/validate_bundle.py` encodes `R:[A-Z_]+`, which
+    excludes digits. So `R:T2SCAN`, `R:T2FANOUT` and `R:MTIME2` raise `covers_referent` info
+    while conforming to what the format actually says. One of the two is wrong. Left OPEN
+    rather than fixed inline: both files are sensitive paths, and widening a grammar so the
+    author's own nodes pass is the move A17 exists to prevent. Needs its own gated task
+    **CLOSED 2026-07-30 by e15 — and the finding above was wrong about what it was.** 7 info → 0.
+    Four of the seven were a validator defect: `COVERS` was unanchored, scanned the whole body,
+    read `· covers: …` out of PLAN prose and invented referents. The remaining three were not two
+    grammars disagreeing but the absence of one — §6.1 stated the metavariable `R:<CODE>` and
+    expanded `<CODE>` nowhere, so the validator and the engine each invented a grammar privately
+    and drifted in opposite directions. §6.1 now carries a fenced `covers-grammar` block as the
+    single statement and `test_grammar_stated_once` holds all three oracles to it by string
+    equality. Decision: WIDEN to admit digits (human:tindang), recorded with its reason in the
+    node's `## DECISION` section. The finding text above is left as written per §3.6
+  - **F2 · 65 rules are LABELLED, not proven — measured by e12 on this bundle, 2026-07-30.**
+    Binding every gated task's `covers:` labels against the set of check IDs that exist in the
+    suites: **67 of 133 rules proven.** Of the 66 that are not, **65 are claimed by check IDs that
+    do not exist anywhere**, across nine M0 tasks — `align-standards-citations` (6 fictional IDs),
+    `define-authority-rules` (8), `define-compat-contract` (11), `define-entity-model` (5),
+    `define-evidence-binding` (10), `define-log-rotation` (7), `define-read-protocol` (7),
+    `define-scale-rules` (3), `define-task-schema` (5) — 61 distinct names in total. The remaining
+    1 is an honest gap: a Must in `build-worked-example` with no `covers:` at all.
+    Worked example: `define-entity-model` cites `test_minimum_bundle`; the suite contains
+    `test_minimal_bundle_conforms`. The others cite tests never written.
+    A second, worse shape sits inside the same finding: `define-scale-rules` has **no RULES
+    section at all**, and its three checks cite `G1`/`G2`/`G3` — a rule-ID namespace FORMAT does
+    not define. It declares proof over rules it never states, and the validator accepted it. So
+    `covers:` is unchecked in both directions: neither the check nor the rule had to exist.
+    **What is and is not wrong.** The M0 *rules* are sound and `validate_bundle.py` does enforce
+    many of them — 18 real checks passed and M0's CLOSE openly declared that one shared receipt
+    (`build-worked-example.d/runs/3.md`) earned the milestone, so the gate decision was defensible
+    in intent. What was false is the narrower claim each node made in its CHECKS section: that
+    *these named checks* proved *these numbered Musts*. The honest A24 kind for those nine tasks
+    was `artifact-hash`, not `test-ids`.
+    **Disposition (human:tindang, 2026-07-30): recorded, nothing reopened.** No gated node is
+    rewritten — a gate was taken against those claims, and editing the claim afterwards erases
+    what was accepted (R:ERASE, §3.6). M0 stays closed. This is A15's own finding, measured on the
+    project that raised it, and it stands as the evidence for A15/A16 rather than as debt
+  - **F3 · `run` writes a receipt and never binds it to the task — found 2026-07-30, at e12's
+    gate.** `add.run` creates the Run node correctly and returns `next: add gate <slug>`, but
+    appends nothing to the task's `verified[]`. That list is the ONLY thing `done()` and `since()`
+    read, so the receipt exists on disk while the record of it existing does not. Every
+    `process:pytest` / `process:run` stamp in this bundle — six of them, e1–e4, e6, e7 — was
+    written by hand; e12's is the first that was not, which is how the gap became visible.
+    Two consequences worth stating plainly: `status --since` under-reports every machine act, and
+    this milestone's EXIT criterion "`.add/` is driven by the engine, not by hand" is **not yet
+    met** on the receipt→stamp link, though it reads as though it were. The fix is a few lines
+    inside `run`, and it is deliberately NOT being made here: `run` is e7's contract and e7 is
+    gated. Assigned to `e8 build-doctor`, which must also carry the check that catches it —
+    a task whose `verified[]` cites no receipt while `<slug>.d/runs/` is non-empty.
+    Same function, same class, found at e5: the receipt dict `run` RETURNS omits `scope_digest`
+    while declaring `freshness: content`, so a caller passing it to `fresh()` gets `False` with
+    "no content digest". The receipt on disk is complete; the in-memory copy is not the receipt
+  - **F4 · e1's parser has produced two silent value defects, and the fix for one caused a
+    third — recorded 2026-07-30, decided: keep building.** In order: (a) `append_item` could not
+    append to an inline `verified: []`, dropping every stamp on a fresh node (found by e4, after
+    e1's 15 checks and a human gate); (b) a wrapped double-quoted list item was truncated at the
+    first newline and kept its opening quote, silently losing the tail of a frozen `gives:` — live
+    in `compile-graph` since e2, through 132 checks, the validator and five gates (found by e5
+    RENDERING the value); (c) the first fix counted quote characters instead of scanning them, so
+    one apostrophe swallowed `budget`/`generated`/`verified` across **25 nodes**, with 134 green
+    and CONFORMS (found because `done` refused a transition it could not entitle).
+    **The pattern, not the instances, is the finding.** All three were silent — no exception, no
+    failing check, a plausible wrong value. Two oracles existed and neither could see them: the
+    suite tests constructs it thought of, and the validator has an independent parser, so
+    agreement between them proves nothing about either. What each defect had in common is that
+    nothing asserted READ fidelity: `test_roundtrip_bundle_byte_identical` proves writes are
+    lossless and is silent when a key vanishes from `fm` while the bytes stay perfect.
+    That gap is now closed by `test_live_bundle_keys_all_parse` — every key present in a node's
+    raw text must reach its parsed dict — which is the cheapest strong oracle this project has
+    added, and would have caught all three. A deliberate parser audit was considered and NOT
+    taken: the missing oracle was the actual defect, and it is now in place
+  - **F5 · `new` has never substituted its template placeholder — found 2026-07-30.** `add.py`
+    writes `BODIES` without `.format(slug=slug)`, so every node `new` has ever created carries a
+    literal `{slug}` in its CARD `next:` line — a hint that would fail if run, which is R:FAKEHINT
+    and a law-4 violation in the verb whose whole job is to teach the next command. It survived
+    e4's 15 checks and a human gate because those asserted the node was created and parseable,
+    never that its hint was runnable. I hand-wrote the real slug into all twelve M1 nodes while
+    filling their CARDs and never noticed the cause. **Assigned to `e9 build-hints-layer`**, which
+    already declares `R:FAKEHINT` and `test_hint_is_runnable` — the check was planned before the
+    defect was found, which is the one encouraging thing about it
+  - **F6 · `run`'s default `cwd` contradicts the format's own path convention — found 2026-07-30.**
+    `run(root, cid, command)` defaults `cwd` to `root`, i.e. `.add/`, but every `scope:` path in
+    this format is REPO-relative and `scope_digest(cwd, scope)` resolves against `cwd`. So the
+    default silently produces an empty digest and demotes the receipt to `freshness: mtime` — A22's
+    declared fallback taken by accident rather than by the condition it was written for. Worse, it
+    points the caller's command at the bundle: taking e14's receipt with the default made pytest
+    write `.add/.pytest_cache/` INTO the bundle, and the validator went from CONFORMS to 1 error on
+    a file the engine had caused a tool to create. Found by making the mistake, then reading the
+    validator rather than the exit code. Two receipts (`runs/2.md` exit 4, `runs/3.md` exit 1) are
+    kept as recorded outcomes rather than deleted (law 3). **Assigned to `e10 build-durability`**,
+    which owns the engine's IO failure surface: the default should be the bundle's PARENT, and a
+    command whose `cwd` is inside `.add/` should be refused outright — the engine must not be the
+    reason a bundle stops conforming
+  - **F7 · a failing check can be recorded as PASSED, because test IDs are keyed by bare name —
+    found 2026-07-30 at e8's receipt.** `extract_ids` does `out[name] = "fail" if bad else "pass"`,
+    so two tests sharing a name in different files collide and the LAST one parsed wins. Not
+    theoretical and not rare: this repo already has the collision — `test_sync_is_idempotent` exists
+    in both `test_checks_compiler.py` and `test_doctor.py`, which is why e8's receipt reads
+    **209/209 reported against a suite of 210**. Demonstrated directly: a junit file with one failing
+    and one passing `test_same` yields `{'test_same': 'pass'}`. **The failure disappears from the
+    evidence.**
+    This is the worst-placed defect the project has found. A24's whole ladder rests on `test-ids`
+    being the strongest kind of evidence, `gate` binds a node's `covers:` against exactly this dict,
+    and `unbound` decides refusals from it — so a green gate can be entitled by a check that failed.
+    Every receipt taken with `kind: test-ids` inherits the ambiguity, including this milestone's.
+    The same key mistake is in `checks_of` (e14), which also maps bare name -> citation, so two
+    same-named tests in different files collapse there too and `doctor`'s F2 check inherits it.
+    The fix is the junit `classname` attribute, which was in the data all along and thrown away:
+    the ID should be `classname::name`. That changes every existing receipt's ID SHAPE, so it is a
+    migration question and not a one-line edit — assigning it needs a decision, recorded below when
+    one is taken. Found by noticing 209 where 210 was expected, which is the fourth defect this wave
+    caught by reading a number rather than by running a test
+  - **F8 · `gate` refused a fully authored node over a path pattern — found 2026-07-30, at e8's
+    gate, and FIXED there.** `placeholders_in` matches `<[a-z_][^>]*>` anywhere in a RULES or CHECKS
+    line, so e8's M5 — "a Run node under `<slug>.d/runs/` that no `verified[]` stamp points at" —
+    read as an unfilled template token and the gate refused with "author build-doctor's RULES and
+    CHECKS". Correct machinery, false conclusion, and the tempting fix was the wrong one: rewording
+    every node that needs to name a path SHAPE makes prose pay a permanent tax to a defective oracle,
+    and it is R:SELFSERVE's shape — bending the content so the author's own node passes.
+    Fixed instead by excluding backticked spans, which are code and not template tokens. Verified
+    safe before changing it: **no placeholder in either `BODIES` template is backticked**, measured
+    across both, so the exclusion cannot blind the refusal that made `gate` worth building. Two
+    checks were added to e13's suite after e13's gate and are recorded as a correction on its node.
+    Worth stating plainly: a refusal that fires wrongly is more expensive than one that never fires,
+    because it teaches the author to work around the oracle
+  - **F9 · `build-gate-verb` was frozen and gated without publishing a frozen interface — found
+    2026-07-30, while landing A5.** Its frontmatter carries `depends_on:`, `needs:`, `scope:` and
+    five `verified[]` stamps including two `human` gates, and **no `gives:` key at all**. §3.5
+    makes `freeze` the act that turns `gives:` into an interface others may depend on; here there
+    was nothing to freeze, and `freeze` did not notice. Found by consequence, not by inspection:
+    `bind-quick-lane` declared `needs: /tasks/build-gate-verb.md#gives` and the validator returned
+    `edge_unresolved`, because `#gives` fell through frontmatter lookup to a heading that does not
+    exist. The `gives:` line in that node's CARD (body line 29) is prose, not an interface.
+    **Consequence:** no node can legally declare a dependency on the gate verb's contract — the
+    one verb whose contract every trust claim in this project passes through. `bind-quick-lane`'s
+    `needs:` is pointed at `build-evidence-binding#gives` instead, which resolves and is the
+    interface it actually consumes.
+    **Not fixed here, deliberately.** Adding `gives:` to a node that took two human gates edits
+    what was accepted (R:ERASE, §3.6). The defect is in `freeze`, which should refuse a node whose
+    `gives:` is absent exactly as it refuses a Must in no check — **assigned to `bind-quick-lane`**,
+    which is already the task that makes an absent claim unable to entitle anything (L8). Same
+    law, one altitude up: an empty binding cannot entitle a gate, and an absent interface cannot
+    entitle a freeze
+  - **F10 · `log.md` has no compiler, and its own header forbids what actually maintains it —
+    found 2026-07-30, while landing A5.** A20 and law 5 make the journal the flagship compiled
+    artifact: it exists to remove the last shared mutable file, and `init` writes it with the
+    header *"COMPILED BODY (A20) — rendered from node `verified[]` stamps. Do not append here."*
+    **Nothing renders it.** `doctor_sync` recomputes CARD drift and `index.md` and stops; there is
+    no `_render_log`. Its own docstring says it resolves *"a conflicted `index.md` or `log.md`"* —
+    the second half is not implemented. So all 78 M1 entries were hand-appended into a file that
+    says not to, which is why every one of them reads like narration rather than a projection.
+    **This is the N family's cleanest instance.** The artifact whose entire purpose was to remove
+    hand-maintenance is hand-maintained, the promise is printed at the top of the file itself, and
+    it survived `e8`'s gate because the checks asserted that `--sync` ran, never that the journal
+    it claims to compile was compiled. It is also the reason A20's concurrency argument is
+    currently untrue: a hand-appended file has exactly the concurrent writers A20 removed on paper.
+    **Owner OWED, not assigned.** It is ~30 lines against an invariant already 72 over, and
+    assigning it before the D-12 cut is decided would be the third time this milestone books work
+    against a projection instead of a measurement (A1, then A2's correction). Decide it at `e11`'s
+    freeze, with the CLI's real size in hand, alongside the cut
+  - **F11 · `checks --sync` fabricates citations at scale, because rule IDs are node-local and
+    the compiler matches on them alone — found 2026-07-30, while compiling e16's CHECKS.**
+    `checks_of` returns `{id: (covers, description)}` for a list of test files; `checks_sync`
+    keeps every entry whose `covers:` intersects the node's rule IDs. But `M1` means *this
+    node's first Must* — it is namespaced to the node and to nothing else. Run against the repo
+    suite as the verb is documented, e16's ten rules matched **209 of 222 tests**: 27 from
+    `test_gate_verb`, 23 from `test_brief_compiler`, 22 from `test_checks_compiler`, 20 from
+    `test_doctor`, 17 from `test_status`, none of which have anything to do with e16.
+    The node's CHECKS section was compiled with 209 lines before I noticed and re-ran it against
+    a single file by hand.
+    **Why this is the worst of the six.** e14 exists to answer F2 — a citation must be compiled
+    from the suite because a hand-authored one "cannot be distinguished from one that was never
+    true". L7 then says compiled beats authored, so these citations are *trusted more* than
+    the hand-written ones they replaced. A verb that manufactures 209 false citations and
+    stamps them machine-verified is F2 with the safety mechanism pointed backwards. It did not
+    fire on e16 only because the author happened to pass one file.
+    The fix needs a node↔test-file binding the format does not currently have (the docstring
+    convention `covers:` carries no node identity). Owner OWED — it is a FORMAT question before
+    it is an engine question, and answering it inside an engine task would be F1's mistake again
+  - **F12 · a test that never ran was recorded as PASSED — found 2026-07-30, at e16's refreeze.
+    CLOSED by e16 the same day.** `extract_ids` tested each `<testcase>` for `failure`/`error`
+    and let everything else fall through to `pass`, so a `<skipped/>` case entered the receipt as
+    proof. F7's sentence with one word changed, in the same six lines. Folded into e16 rather
+    than filed, because fixing it later would have been a second migration of the same ID
+    semantics behind a gate e16 was about to earn. `bind` was already sound (`== "pass"`), so the
+    defect was purely extraction-side — recorded here because the receipt is what a gate reads
+  - **F13 · the one write path splices new stamps into the middle of wrapped ones — found
+    2026-07-30, by audit.** `append_item` walks for the last line starting with `- `, then breaks
+    on the first non-empty line that does not. A stamp wrapped across two lines has exactly that
+    shape, so the insert lands *between* the item's first line and its continuation:
+    ```
+    verified:
+      - { by: "a", at: 1, act: freeze,
+      - { by: "b", act: gate }        <- inserted here
+          note: "a stamp that wrapped" }
+    ```
+    Two corrupt entries where there was one valid one, in the function every verb writes through.
+    It has not fired because nothing has yet emitted a wrapped stamp — `_transition` writes one
+    line per stamp and the long `note:` fields so far stayed under the wrap. That is luck, not
+    design: a `reason:` long enough to wrap is one RISK-ACCEPTED away, and the corruption is
+    silent because the file still parses
+  - **F14 · a receipt stays FRESH when a new file appears under a glob scope — found 2026-07-30,
+    by audit.** `fresh` iterates the *recorded* digest entries and re-hashes each. It never
+    re-expands the glob, so a file added after the run has no entry to compare and freshness
+    passes. Demonstrated in a scratch repo: digest `src/**` at run time (one file), add
+    `src/b.py`, `fresh` returns `(True, 'every file in scope is byte-identical to the run')`.
+    A22's whole claim is that a verdict cannot be recorded over changed code; an entire new
+    module is the largest possible change and it is the one shape A22 cannot see. Every
+    glob-scoped node in this bundle inherits it. The fix is to re-expand and compare the file
+    SET, not just the hashes
+  - **F15 · A17's floor is escaped by declaring a BROADER scope — found 2026-07-30, by audit.**
+    `authority_for` matches each `scope:` entry against each `sensitive_paths:` pattern by
+    fnmatch or prefix. Both are direction-sensitive: `add/scripts/add.py` matches
+    `add/scripts/**` and pins to `human`, but `add/` and `.` — which strictly *contain* the
+    sensitive path — match neither, and fall back to the declared `sensitivity:`.
+    ```
+    scope=['add/scripts/add.py'] -> human      scope=['add/'] -> process
+    scope=['add/scripts']        -> human      scope=['.']    -> process
+    ```
+    A floor that a wider blast radius lowers is not a floor. A17 is the mechanism this milestone
+    leans on hardest — P8 below is entirely about its cost — and it is avoidable by being
+    vaguer about what you are touching, which is the opposite of the incentive it should create
+  - **F16 · every `brief:` stamp names a brief that was never issued — found 2026-07-30, by
+    audit.** `gate` records `brief(root, cid)["hash"]` with default arguments, but a brief is
+    compiled *for a phase and an audience* and hashes differently for each. On e16 today:
+    ```
+    default        sha256:0ddb4080d5deea29     --phase verify   sha256:b5f7a5343b0d75ca
+    --phase build  sha256:258f1b8b6001cc98     --for-subagent   sha256:45f7c5b4f056527e
+    ```
+    An agent driven by `add brief e16 --phase build` receives `258f1b…`; the gate stamps
+    `0ddb40…`. A16's promise is that the stamp identifies *the instructions that drove the work* —
+    it currently identifies a fifth artifact nobody read. The second half is worse and not
+    fixable by passing the phase through: the hash is computed at gate time from the node as it
+    then stands, so RULES edited between brief and gate are invisible. Recording the digest at
+    ISSUE time, in the receipt, is the shape that would actually bind — which makes this an A16
+    correction, not a one-line gate fix. Owner OWED
+  - **F17 · `gate` records PASS over a receipt whose command exited non-zero — found 2026-07-30,
+    at e13's own gate.** `gate`'s five refusals are: unknown verdict, unknown node, a non-PASS
+    with no reason, no receipt, a stale receipt, a placeholder, an unbound rule. **`exit` is not
+    among them** — the function never reads `receipt["exit"]`. Reproduced by isolating every other
+    refusal (all placeholders filled, every rule covered): a receipt carrying `exit: 1` returned
+    `ok = True`. The binding path is why it survives — `bind` proves a rule from the cited IDs in
+    `passed[]`, and a suite can report ten green checks while the command that ran them exits
+    non-zero for a collection error, a plugin crash, a coverage-threshold failure, or a
+    post-run hook. The receipt says the run failed and the gate says the work passed, in the
+    same file. A24 puts `command-exit` on the evidence ladder *as a kind*, so the engine already
+    treats the exit code as evidence in one verb and ignores it in the other.
+    **Assigned to `refuse-red-command`** (created 2026-07-30) — L8 says a gate is entitled by what
+    a receipt contains; this is the case where what it contains is a refusal and the gate reads
+    past it
+  - **F18 · a scope excursion silently turned an existing assertion vacuous, and every oracle
+    passed — found 2026-07-30, reviewing e16's own diff AFTER its gate.** e16 changed `checks_of`
+    to key by `module::name`, and updated two test files outside its `scope:` as a declared
+    excursion. One of the updates left `assert "test_not_real" not in found` untouched — against
+    qualified keys a bare name can never be in them, so the assertion became **true by
+    construction**. It guards the extractor against reading a `def test_` out of a string
+    literal; it would now pass even if the extractor did exactly that.
+    **What makes this a finding and not a typo.** Nothing could have caught it. Freshness digests
+    `scope:` only, so the file was outside A22's view; `bind` reads the citation, not the
+    assertion's strength; the suite stayed 222-green because a vacuous assertion passes. The
+    gate was taken over a suite one of whose checks had stopped checking. Every mechanism this
+    milestone built to make evidence honest is blind to a check that still runs and proves
+    nothing — which is A15's finding one level in: `covers:` was a label, and here the *test*
+    became the label.
+    **Fixed immediately** (resolved through `cite_hits`, verified to fail against a poisoned
+    input), and the gate is NOT reopened: the file is outside `scope:`, so no receipt claim is
+    falsified. Recorded because the class is unowned — a contract change that weakens an
+    assertion in a file the node does not declare has no detector anywhere in the engine
+  - **F19 · the engine can only represent two of the three beats — found 2026-08-05, freezing
+    e17.** `new` writes `status: direction` and `done` writes `status: done`. **No verb ever
+    writes `build` or `verify`.** `freeze` — the act whose entire meaning is "direction is
+    settled, start building" — appends a stamp and leaves the status untouched. Measured on this
+    bundle: 17 `direction`, 24 `done`, 1 `active`, and **zero** `build` or `verify`.
+    Three consequences, in rising order of seriousness:
+    1. a frozen node's CARD still reads `beat: direction · next: add freeze <slug>` — it tells
+       the reader to do the thing they just did. This is the AIDD-2.5 weakness the successor was
+       supposed to fix ("poor UX at gates / following AI work") reappearing in the successor.
+    2. `status`'s `waiting` list is `[c for c in active(graph) if status == "verify"]`, so it is
+       **permanently empty** and the `next: add gate <slug>` hint it exists to produce can never
+       fire. The engine never tells you a node is ready to gate.
+    3. the worst: `brief` derives its phase from status — `PHASE_OF.get(fm["status"], "build")`.
+       Since status is `direction` until the gate, **every brief compiled for a node under
+       construction is a DIRECTION brief.** Demonstrated on e17 itself while it sat frozen,
+       green, and awaiting its gate: `brief(...)["phase"] == "direction"`.
+    So the three-beat model — the method's core claim, with three prompt templates written for
+    it in `templates/prompts/` — has exactly one beat the engine can actually reach. The build
+    and verify templates have never been served to anything. That is not a bug in `freeze` so
+    much as a lifecycle nobody closed: `new` opens it, `done` closes it, and the middle was
+    left to a `status:` field that no verb advances.
+    **Owner OWED, and it should be decided WITH `load-prompt-templates` (x2, A5)** — that task
+    exists to serve the phase templates, and it will serve `direction` three times unless this
+    is fixed first. Sized at a glance: `freeze` sets `build`, `run` sets `verify`, ~4 lines. The
+    reason it is not folded into e17 is that e17's PLAN said "the smallest possible change to
+    one function" and a lifecycle fix is a second contract — F11's lesson about answering a
+    format question inside an engine task
+  - **F20 · the invariant that forces D-12 has two values, and they disagree by 120 lines —
+    found 2026-08-05, taking the cut.** A5's amendment stamp re-budgeted `e11` from 80 to 200
+    ("no CLI entry point exists at all"). **`package-in-skill.md`'s frontmatter still reads
+    `budget: 80 lines`.** So the A3 invariant depends on which artifact you read:
+    ```
+    summing the task nodes   1921 + 470 = 2391   UNDER by 9
+    summing with A5's 200    1921 + 590 = 2511   OVER  by 111
+    ```
+    Every statement of "111 over" in this bundle — the CARD, PROJECT.md, A6, the PR — traces to
+    the second. The node a builder would actually read says the opposite. This is L5 (one
+    artifact, one version) breached in the one number the milestone's central decision turns on,
+    and it went unnoticed because an amendment stamp is prose that nothing recomputes against
+    the nodes it re-budgets.
+    **Two things follow.** The engine has no verb that sums allocations, so the invariant has
+    been maintained by hand in three places since A1 — which is F10's shape (a compiled artifact
+    that is hand-maintained) applied to a number rather than a file. And D-12 was nearly fired
+    on the larger of two figures without anyone checking they matched.
+    **Not repaired by editing `package-in-skill.md` to say 200.** That would pick a winner by
+    typing, and the point of the measurement now underway is that 200 was never measured either.
+    The number is settled by `e11`'s spike, and both places are written once from the result
+  - **F21 · A3's estimate for the three status flags was wrong by 5–7× — measured 2026-08-05.**
+    A3 restored `--locate`, `--graph` and `status --since` into e6 at **"~247 lines"**. Measured
+    in the shipped engine: `locate` 6, `graph_lines` 22, `since` 8 — **36 lines of function**,
+    ~46 with the branches in `status()`. The restoration that A3 treated as spending most of a
+    301-line margin actually spent about a sixth of it.
+    Recorded not as a historical curiosity but as the calibration input for every remaining
+    allocation: these are the same estimates, made the same way, that put `e11`'s CLI at 200 and
+    D-12's cut order at "enough". The cut order buys ~63 against a 111-line gap, so **D-12 as
+    written cannot close it even if fired completely** — which nobody could see until the pieces
+    were measured rather than summed
+risks:
+  - ~~**A22 is specified, not implemented.**~~ **RETIRED at e7, 2026-07-30.** `scope_digest`
+    hashes git blobs over `scope:`; the M0 kill-test was run in reverse — `git worktree add`
+    rewrote every mtime and the receipt still read FRESH, while a one-byte edit read STALE
+  - ~~**A24 rests on test-ID extraction working in tools we do not control.**~~ **ANSWERED at
+    e12, 2026-07-30.** `test-ids` is reachable: e12's own receipt earned it with 10/10 IDs from
+    junit-xml. The residual risk is narrower than stated — junit-xml is the only supported format
+    at v1.0 (A1's cut), so a runner that emits nothing parseable leaves every receipt at
+    `command-exit`. That degradation is now honest and labelled, which is what A24 required
+  - **P8 bites hardest here.** Every engine task's scope is the engine, and the engine is a
+    sensitive path — so A17 pins all twelve to `human`. M1 either costs twelve human gates
+    or P8 gets decided. Decide it with one gate's evidence in hand, not zero
+  - a frontmatter writer that round-trips through a YAML serializer will silently strip the
+    comments this bundle uses to carry rationale. Writes must be surgical, not regenerative
+
+## EXIT
+- [x] ten verbs green, each built red-first, each ending in a `next:` line   (← every e-task)
+      ↳ **10 of 10 gated**: parse · graph · init · new/freeze/done · status · run/learn · brief ·
+        bind · gate · checks · doctor
+      ↳ the VERBS are done; `e11 package-in-skill` still owes the CLI surface that reaches them
+      ↳ ⚠ **RE-READ 2026-07-30 (A5).** This criterion is phrased as a function and was checked as
+        one. `add/scripts/add.py` contains no `argparse`, no `sys.argv` and no `__main__`, so
+        `python3 add/scripts/add.py <verb>` does nothing — "ten verbs green" means ten FUNCTIONS
+        are tested. It is left ticked because what it literally says is true, and it is the
+        exhibit `define-product-exit` (A28) exists to make impossible. The promise a user would
+        read into it is carried by the four unticked criteria below
+- [ ] the ten verbs are reachable from a command line, with their flags       (← package-in-skill)
+- [ ] all five spec lenses exist in every profile, and an unknown profile is refused (← ship-domain-profiles)
+- [ ] no gate is entitled by an empty `covers:` set                           (← bind-quick-lane)
+- [ ] `brief` compiles from a template file, so the prompt library has a consumer (← load-prompt-templates)
+- [ ] `status` names the READY next node, and it agrees with this CARD        (← repair-status-surface)
+- [ ] engine ≤ 2,400 lines **`wc -l`**, asserted in CI from wave one          (← build-durability)
+- [ ] every per-task line budget is asserted in the SAME unit as the ceiling  (← amendment A1)
+- [ ] consumed + Σ(remaining allocations) ≤ 2,400 at every gate               (← amendment A3)
+- [ ] `.add/` in this repo is driven by the engine, not by hand              (← package-in-skill)
+- [ ] `python3 add/scripts/add.py` runs from a clean checkout with zero install (← package-in-skill)
+- [x] every FORMAT rule the validator enforces still holds after the engine writes (← build-doctor)
+      ↳ `test_parity_with_m0_oracle`, gated 2026-07-30 — exact agreement on all seven of the M0
+        validator's codes, run as a SUBPROCESS so the two implementations stay independent
+- [x] a receipt survives a fresh worktree checkout (A22 implemented, not just specified) (← build-receipts-learn)
+      ↳ `test_receipt_survives_worktree`, gated 2026-07-30. mtime rewritten, digest unchanged, FRESH
+
+## AMENDMENTS
+### A1 · 2026-07-29 · line-budget rebase (human:tindang)
+**What e1 found.** Not an overrun — a units error. e1 came in at **159 code lines against a
+180-line allocation (88%)** and **245 total lines (136%)**. The allocation was a good estimate; it
+was simply denominated in code lines, while the 2,400 ceiling is `wc -l` — the unit of the
+8,948-line 2.5 anchor (`add.py` 6,600 + `add_engine/` 2,348). Nobody converted. Measured across all
+twelve tasks the gap is **1,337 lines**, not the 65 the first reading suggested.
+
+**Cuts pre-booked** (660 code lines; the overflow rule's order — surface first, never a law):
+
+| cut | code | owner |
+|---|---:|---|
+| `--locate` dropped | 50 | e6 |
+| `--graph` dropped | 70 | e6 |
+| `status --since` dropped — R8's window is served by `log.md`'s date groups | 40 | e6 |
+| `doctor` runs its checks over **e2's compiled graph** instead of building its own scan | 150 | e8 |
+| `init` ships 2 profiles as code; the other 3 become template data | 80 | e3 |
+| `new`/`freeze`/`done` share one node-transition path | 60 | e4 |
+| `brief` renders from e2's compiled graph rather than its own traversal | 60 | e5 |
+| evidence binding extracts test IDs from junit-xml only at v1.0 | 80 | e12 |
+| `learn` appends to spec deltas without its own dedupe pass | 40 | e7 |
+| durability tests reuse e1's atomic-write harness | 30 | e10 |
+
+**Rebased budgets, in the ceiling's unit.** Verb modules are budgeted at **0.75 code/total**; e1
+keeps 0.65 because its docstrings are the R:REGEN guard, not decoration.
+
+| | e2 | e3 | e4 | e6 | e5 | e7 | e12 | e8 | e9 | e10 | e11 | sum |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| code | 260 | 160 | 240 | 120 | 200 | 180 | 120 | 150 | 60 | 60 | 60 | 1610 |
+| **total** | **347** | **213** | **320** | **160** | **267** | **240** | **160** | **200** | **80** | **80** | **80** | **2147** |
+
+e1 spent 245 + 2,147 = **2,392 against 2,400. The reserve is 8 lines.** That is not comfort; it is
+a plan with no slack, and it should be read that way.
+
+⚠ that verb modules can be written at 0.75 code/total — e1 ran 0.65. **If wave 2 lands at 0.65 the
+plan is 322 lines over and a verb must go**, which is a D-2 change and needs its own decision.
+`e2` tests this at the next gate.
+
+**No task left scope, so no `status: dropped` node and no `needs:` propagation.** D-6 is untouched:
+the ceiling did not move.
+
+> **Corrected within the hour of writing.** The `e8` row first read "*reuses `validate_bundle.py`'s
+> checks*". It cannot: the validator lives in `scripts/` as repo tooling, while the engine ships
+> **inside the skill directory with zero install** and therefore may not import out of this repo.
+> The real 150 lines come from `doctor` running over e2's compiled graph rather than building a
+> second scan — same saving, sound mechanism. Caught by asking what `e8` would actually import.
+
+### A2 · 2026-07-29 · the A1 falsifier was malformed; restated (human:tindang)
+A1 predicted: *if wave 2 lands at 0.65 code/total the plan is 322 lines over and a verb must go.*
+**e2 landed at exactly 0.65 — and the plan is 162 lines ahead.** The prediction fired while its
+conclusion was false, because it silently assumed A1's code-line estimates were right. e2 needed
+**120 code lines against 260 allocated**: it is thin glue over e1, not new machinery. Two wrong
+parameters cancelled.
+
+A1 is left **unedited** (§3.6 — amendments are recorded, never rewritten). It is superseded here.
+
+**The restated falsifier — one measurable, checked at every gate:**
+
+> cumulative lines consumed vs cumulative lines allocated for all gated tasks.
+> **Trigger: consumed > allocated. Response: the next cut is a verb** (`--locate`, `--graph` and
+> `status --since` are already spent by A1).
+
+| after | allocated (cum.) | consumed (cum.) | margin |
+|---|---:|---:|---:|
+| e1 | 245 | 245 | 0 |
+| e2 | 592 | 430 | **+162** |
+
+Density is demoted to an observation. It is a ratio between two estimates and can never be a
+trigger — that is the defect A2 exists to remove.
+
+### A3 · 2026-07-29 · restore the UX cuts; fix the invariant that kept them dead (human:tindang)
+**Three under-runs in a row.** e1 245/245 · e2 185/347 · e3 74/213 — cumulative **504 consumed
+against 805 allocated, +301**. A1 pre-booked 660 code lines of cuts to survive a units error that
+turned out not to bind. Three of those cuts were user-facing, and they are precisely the surface
+that answers 2.5's weakness #5, *user experience on gates and following AI work*.
+
+**Restored** (~247 lines at the observed 0.65 density), folded into `e6`:
+
+| restored | code | why it should not have died |
+|---|---:|---|
+| `--locate` | 50 | jump to a node by slug — goal 11, "slugs easy to look up" |
+| `--graph` | 70 | render the milestone DAG — the only view of what the AI is doing |
+| `status --since` | 40 | what changed since a point in time — R8, following AI work |
+
+`e6 build-orient`'s budget: **160 → 407**.
+
+**The invariant A2 stated was one-directional and therefore useless here.** "Consumed > allocated"
+fires only when losing; three consecutive wins produced no signal at all, so the cuts stayed dead
+by default rather than by decision. It is also gameable in the wrong direction — inflating an
+allocation makes the trigger recede. Restated:
+
+> **consumed + Σ(remaining allocations) ≤ 2,400**, checked at every gate.
+> One number, symmetric, and it is the ceiling itself rather than a proxy for it. Slack that
+> appears when a task lands under budget is *visible and spendable*, not silently banked.
+
+| | value |
+|---|---:|
+| consumed (e1–e3) | 504 |
+| remaining allocations (9 tasks, e6 now 407) | 1,834 |
+| **projected total** | **2,338 / 2,400 — slack 62** |
+
+D-6 untouched: the ceiling still has not moved. What moved is which side of it we can see.
+
+### A4 · 2026-07-30 · three tasks added from a hand-work audit (human:tindang)
+**What was audited.** Every action taken by hand across waves 2 and 3, against what the format says
+is compiled and what D-2 says the engine does. Most of it was already planned: the CLI is `e11`'s
+M2, and `index.md`/`log.md`/CARD compilation is `e8`'s `--sync`. Three things had **no owner**:
+
+| gap | measured | new task | code |
+|---|---|---|---:|
+| `gate` does not exist as a verb, though D-2 counts it in the ten | all 11 gates so far were hand-appended through the private `_transition`; none of its 3 specified refusals ran | `build-gate-verb` | 140 |
+| `run` writes a receipt no stamp points at (F3) | **8 of 18 receipts unreachable from the graph — 44% of all evidence** | (same task, M5) | — |
+| `done` is not §3d's one-call quick lane | the lane the ceremony budget is measured against does not exist | (same task, M6) | — |
+| CHECKS is authored, and F2 proved it fiction-prone | **118 of 131 tests already carry `covers:` in their docstring** | `compile-checks-from-suite` | 90 |
+| F1 open since M0 — two documents, two grammars | 7 `covers_referent` info lines | `resolve-covers-grammar` | 30 |
+
+**The invariant, recomputed** (A3): consumed 1,256 + remaining 700 (e8 200 · e9 80 · e10 80 ·
+e11 80 · e13 140 · e14 90 · e15 30) = **1,956 / 2,400 — slack 444.** D-6 untouched: the ceiling has
+still never moved.
+
+**Why `build-gate-verb` matters more than its line count suggests.** e12's M3 says "`unbound` is
+part of every gate's report". That rule was gated PASS while no gate report existed — it could not
+have been true. The rule was not wrong; it had nowhere to land. This task is where it lands, and
+until then every PASS in this project was recorded without the refusal that was supposed to guard it.
+
+**What was NOT added, deliberately.** A `status --bind` census flag (e12's primitives plus e6's
+report already compose it — a flag, not a task) and an `add commit-msg` compiler (it would author
+prose from a node, which is the R:HANDBRIEF mistake pointed the other way).
+
+### A5 · 2026-07-30 · five tasks from a promise audit; the invariant breaches (human:tindang)
+**What was audited.** Not the code — the *documents against the running engine*. Every sentence in
+`FORMAT.md` and `PROPOSAL.md` describing user-visible behaviour was executed. Eight failed.
+
+| # | promise, as written | what running it produced | owner |
+|---|---|---|---|
+| N2 | FORMAT §5: *"the lens set never changes; the skeleton does"* | `init(profile='doc')` creates **7 files, no `specs/system.md`** | `ship-domain-profiles` |
+| N3 | §4b: `--profile <api-service\|ui-app\|library\|cli-tool\|data-pipeline\|doc>` | `PROFILES` holds **two** (`code`, `doc`); `api-service` silently falls back and `index.md` records the name anyway. This bundle's own `PROJECT.md` says `profile: cli-tool` | `ship-domain-profiles` |
+| N4 | FORMAT §7: *"`prompts/<name>.md` bodies are XML skeletons; a brief compiles the fill"* | **no template loading exists**; the three M0-gated skeletons are read by no code | `load-prompt-templates` |
+| N5 | `build.xml.tmpl:25` cites `add locate` | D-2 folded it into `status --locate` — R:FAKEHINT in the prompt that teaches BUILD | `load-prompt-templates` |
+| N6 | D-4: the persona corpus is referenced by path | `.add/index.md:14` → `../AIDD-Book/personas-teacher` **does not exist** | `ship-domain-profiles` |
+| N7 | §4b: `status` gives beat · git progress · cheapest lane · fold nudge · stuck rule · advisory · aging | none of them. And it emitted `next: add brief build-durability` while this CARD said `next: e16` | `repair-status-surface` |
+| N8 | FORMAT §6: quick-lane gate is auto *"on a green, **covers-bound** receipt"* | `gate PASS` over a node with **no `scope:`, no CHECKS**, a `command-exit` receipt and an unfilled EVIDENCE block. The binding passed over the empty set | `bind-quick-lane` |
+| E-1 | "all ten verbs gated" | **no CLI exists.** No `argparse`, no `sys.argv`, no `__main__` in 1,822 lines | `package-in-skill` |
+
+**The pattern, not the instances, is the finding — and it is F5's, generalised.** None of the eight
+is a bug in a function. Each is a gap between what a document promises and what the verb does, and
+each survived because the checks asserted *the machinery ran* and never *the promise held*. F5
+(`{slug}` unsubstituted, through 15 checks and a human gate) was the first instance and was read as
+one defect. It was a class. `define-product-exit` (A28) is the structural fix; the other four tasks
+are the instances.
+
+**Measured, not estimated.** `generated.by` across this bundle: **22 `claude/opus-5` vs 11
+`add/3.0.0`** — two of every three nodes were hand-written. Authority stamps: **45 `human` vs 18
+`process`**. 23 gates, 18 freezes, 18 runs, 27 receipts. The EXIT criterion *"`.add/` is driven by
+the engine, not by hand"* is not close to met, and P8's cost is now a number rather than a worry.
+
+**The invariant BREACHES.** `e11` was allocated 80 lines to package an engine that has no entry
+point. Argparse over ten verbs and ~20 flags, plus `--dry-run` on every write verb, `--json`,
+`--help`, exit codes and error handling, does not fit in 80. Re-budgeted to **200**:
+
+| | e16 | e9 | e10 | e11 | x1 | x2 | x3 | x6 | x5 | Σ remaining |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| `wc -l` | 60 | 80 | 80 | **200** | 60 | 40 | 60 | 40 | 30 | **650** |
+
+> consumed **1,822** + remaining **650** = **2,472 / 2,400 — 72 OVER.**
+
+A3's invariant fires for the first time since it was restated. **D-6 is untouched: the ceiling does
+not move.** The cut is **owed, not taken** — and deliberately so. A1 pre-booked cuts against an
+estimate and A3 had to restore three of them a day later, because a cut taken on a projection is a
+cut taken on the weakest evidence available. The pre-booked order is `--locate` → `--graph` →
+`status --since` → a verb (`learn`, folded into `doctor --learn`), and the first three are exactly
+the surface that answers weakness 5 and goal 13 — the same surface A3 restored and `x3` is about
+to extend.
+
+**Decision point: `e11`'s freeze**, when the CLI's real size is known rather than guessed. If the
+CLI lands under 200 the breach may close itself; if it lands at 250 a verb goes. Recording the
+breach without resolving it is the honest state, and pretending the projection is a measurement is
+what A2 was written to stop.
+
+**What was NOT added, deliberately.** `write-team-ref` (goal 8) and `prove-first-light` exist as
+nodes but belong to M2 and the new `first-light` milestone respectively — they are not engine work
+and must not borrow this milestone's line budget.
+
+### A6 · 2026-07-30 · one task from an engine audit; five findings recorded without owners (human:tindang)
+
+**What was audited.** The engine's own trust path, read against what it claims — the four functions
+every verdict passes through (`gate`, `fresh`, `authority_for`, `append_item`) plus the two
+compilers a gate reads (`checks_sync`, `brief`). Six defects, every one verified by execution
+before it was written down, because recording an unverified finding is F2's exact shape one level
+up. F12 was found first and folded into e16 rather than filed; the rest are F11 and F13–F17.
+
+| # | what it does | assigned |
+|---|---|---|
+| F11 | `checks --sync` matched **209 of 222 tests** into one node — rule IDs are node-local, the compiler matches on them alone | OWED — a FORMAT question first |
+| F13 | `append_item` splices a new stamp into the middle of a wrapped one, producing two corrupt entries | OWED |
+| F14 | a file ADDED under a glob scope leaves the receipt reading FRESH — A22 cannot see the largest possible change | OWED |
+| F15 | `scope: [add/]` escapes A17's `human` floor that `scope: [add/scripts/add.py]` triggers | OWED |
+| F16 | every `brief:` stamp names a hash for a brief that was never issued (gate recomputes with default args) | OWED |
+| F17 | `gate` records PASS over a receipt whose command exited non-zero | **`refuse-red-command`, 25 lines** |
+| F18 | a scope excursion turned an existing assertion vacuous; no oracle could see it | fixed at once; the CLASS is OWED |
+
+**Why one owner and five OWED.** The invariant is already breached, and A2's whole lesson was that
+this milestone books work against projections and then discovers the projection was the problem.
+F17 is 25 lines inside a function this wave already opened, and it is the one defect that lets a
+false PASS reach the record — it is bought. The other five are all larger than they look: F11 needs
+a node↔test binding the format does not have, F16 needs A16 restated to hash at ISSUE time, and F14
+needs the digest to compare a file SET. Each is an amendment to a frozen spec wearing an engine
+fix's clothes. They are recorded, sized, and left unassigned until the D-12 cut is decided at e11.
+
+**The invariant, restated with A6 in it.** 1896 consumed + remaining allocations = **2511 / 2400,
+111 over** — up from A5's 2472 by e16's 14-line overrun and A6's 25. The number is now large enough
+that the cut is not a judgement call: something in the remaining allocation does not ship at v1.
+
+**What this amendment does not claim.** Six defects found in one audit of six functions is not a
+sign the audit was thorough — it is a sign the ratio is unknown. No other function was read.
+
+### A7 · 2026-08-05 · D-12 fires, and D-6 is broken on purpose (human:tindang)
+
+**What happened, in order.** The invariant read 2511/2400 and D-12's cut was owed. Rather than
+fire a pre-booked cut on a pre-booked estimate, `e11`'s CLI was WRITTEN and measured first — a
+working spike over all ten verbs with `--dry-run`, `--json`, exit codes and refusal handling. It
+came to **208 wc -l / 138 code**, which put E-2's "realistic 150–250" at the top of its range and
+refuted the hope that a measured `e11` would close the gap on its own.
+
+Then D-12 was fired in full (`e18 cut-status-flags`): `--find`, `--graph` and `status --since`
+withdrawn, **−56 lines measured against ~46 predicted**. Three UX surfaces gone, in a project
+whose named weakness #5 is UX. It was paid first precisely so that what follows could not be
+called a way of avoiding it.
+
+**It still did not fit.** 1865 consumed + 390 remaining + 208 CLI = **2463 / 2400.**
+
+**D-15 — the ceiling is restated in CODE lines, and RAISED.** Two changes, and the second is a
+raise, recorded as one rather than hidden inside the first:
+
+1. **Unit: `wc -l` → code lines.** Under `wc -l` a comment competes with a feature for the same
+   budget. In THIS file that is perverse: 40% of it is comment and docstring, and that prose is
+   where the findings live — F1 through F21 are readable because someone spent lines explaining
+   rather than shipping. A ceiling that taxes explanation in an engine whose whole thesis is
+   auditable evidence is measuring the wrong thing.
+2. **Ceiling: 1,550 code lines.** A faithful conversion of 2,400 wc -l at the measured 60% ratio
+   is **1,440 code**, and the projection is 1,485 — still 45 over. So the conversion alone does
+   not create room and it would be dishonest to imply it did. 1,550 is **an ~8% raise**, and
+   D-6 said the budget "rose to 2,400 once and never again". **D-6 is broken here, knowingly.**
+
+| | code lines |
+|---|---:|
+| engine, after the cut | 1,114 |
+| CLI, measured | 138 |
+| remaining allocations, converted | 233 |
+| **projected** | **1,485** |
+| ceiling (D-15) | 1,550 |
+| slack | **65** |
+
+**Why a raise rather than a fourth cut.** The two remaining cuttable things were
+`build-hints-layer` — a `first-light` EXIT criterion and the direct fix for weakness #5 — and
+`build-durability`, which **gives the CI job that asserts this very invariant**. Cutting the
+check on the number in order to fit the number is circular, and it is the reason F20 survived:
+the invariant has been maintained by hand in three places since A1, and two of them disagreed by
+120 lines without anyone noticing. The alternative was cutting A5's product tasks, which would
+have spent a fourth budget cycle on substrate — finding 0d, chosen deliberately.
+
+**What this costs, stated plainly.** The engine's line budget is no longer a fixed promise; it
+has now moved once under D-6 and once under D-15, and a reader is entitled to treat the next
+overflow as likely to move it again. The defence against that is not this paragraph — it is
+`build-durability`'s CI job, which must land before any further allocation is booked, so the
+number is asserted by machine rather than maintained by three hand-edited copies.
+
+**Every allocation is rewritten in the new unit, in the nodes themselves.** Not in this stamp:
+F20's finding is that a number living in an amendment while the nodes say otherwise is how the
+invariant drifted in the first place.
+
+## STRATEGY
+approach: dependency-first — nothing can be built before the thing that reads and writes a
+  node, and nothing can be reasoned about before the graph compiles
+freeze-first: `port-okf-parse` publishes the node I/O contract every other verb calls; it
+  freezes before any verb is written
+waves: (1) e1 parse → e2 graph · (2) e3 init ∥ e4 node-verbs ∥ e6 status · (3) e5 brief ∥
+  e7 receipts → e12 evidence · (4) e8 doctor · (5) e9 hints ∥ e10 durability ∥ e11 packaging.
+  A4 adds: (3b) e13 gate · (4b) e14 checks ∥ e15 grammar
+  <!-- Corrected 2026-07-30. This line read "Waves 2 and 3 are worktree-parallel — the first real
+       use of L-E". They were not: both were built sequentially in one context, so L-E has never
+       been exercised and the milestone asserted a practice the record does not support. The trial
+       is now scheduled explicitly at 4b (e15 as a worktree subagent, decided with the human at
+       wave 3's close) rather than described as already happening. -->
+  <!-- Renumbered 2026-07-29: this line first read six waves (e1 and e2 separately) while
+       amendment A1's table read five. Two numbering schemes for one plan is a defect, not a
+       viewpoint. A1's numbering wins because it is the one CI asserts the line budget against. -->
+
+## CLOSE
+evidence: <one row per task — <t-slug>: gate=<outcome> · checks=<n green> · residue=<none|note>>
+census: <engine calls · briefs compiled and their bytes · receipts · human approvals · gates by outcome>
+log: <the rotated `## YYYY-MM-DD` groups from log.md fold in here>
+goal met: <restate the goal, and the one evidence line that proves the ship meets it>
