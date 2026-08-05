@@ -40,6 +40,7 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 ## Tasks
 
 - [Align ABF-1 with the OKF and ATG source texts](tasks/align-standards-citations.md) — `done` · `standard` · `architecture`
+- [CI asserts the skill keeps its own promises](tasks/assert-skill-conformance.md) — `direction` · `standard` · `architecture`
 - [no gate is entitled by an empty covers: set](tasks/bind-quick-lane.md) — `direction` · `standard` · `security`
 - [brief — compile a task's context, and nothing else](tasks/build-brief-compiler.md) — `done` · `standard` · `architecture`
 - [doctor — conformance and repair over the compiled graph](tasks/build-doctor.md) — `done` · `standard` · `architecture`
@@ -77,6 +78,7 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 - [reconcile the covers: grammar — FORMAT §6.1 vs the validator](tasks/resolve-covers-grammar.md) — `done` · `standard` · `security`
 - [six profiles as data, and a lens set that is really closed](tasks/ship-domain-profiles.md) — `direction` · `standard` · `architecture`
 - [the CLAUDE.md block — the first link, and the agent-agnostic one](tasks/write-first-contact-block.md) — `direction` · `standard` · `architecture`
+- [the gate contract — <=15 lines, decidable in 30 s](tasks/write-gate-ref.md) — `direction` · `standard` · `architecture`
 - [SKILL.md — the loop, inline, under 200 lines](tasks/write-skill-core.md) — `direction` · `deep` · `architecture`
 - [the AI team — when to fan out, and what each agent returns](tasks/write-team-ref.md) — `direction` · `standard` · `mechanical`
 - [the query set that makes a description falsifiable](tasks/write-trigger-eval-set.md) — `direction` · `standard` · `mechanical`

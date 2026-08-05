@@ -13,6 +13,10 @@ depends_on:
   - /tasks/package-in-skill.md
 needs:
   - /tasks/package-in-skill.md#gives
+gives:
+  - "SKILL.md <=200 lines and <=180 chars/line"
+  - "the orient-first imperative"
+  - "the routing index to the references"
 budget: <=200 lines, <=180 chars/line (D-11)
 generated: { by: add/3.0.0, at: 2026-07-30 }
 verified: []

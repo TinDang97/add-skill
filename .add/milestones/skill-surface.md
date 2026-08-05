@@ -11,6 +11,8 @@ tasks:
   - /tasks/write-trigger-surface.md
   - /tasks/write-first-contact-block.md
   - /tasks/write-team-ref.md
+  - /tasks/write-gate-ref.md
+  - /tasks/assert-skill-conformance.md
 depends_on:
   - /milestones/engine-core.md
 generated: { by: add/3.0.0, at: 2026-07-30 }
@@ -19,7 +21,7 @@ verified: []
 ## CARD
 goal: the judgment layer inside a stated budget — the loop driven from the skill text alone
 shape: wave 1 the critical path (s0 → s1 → s2 ∥ s7); wave 2 the nine remaining references
-state: `direction` — 5 of 14 nodes opened; wave 2 opens when wave 1 gates
+state: `direction` — 7 of 14 nodes opened (s10 · s12 opened early: their EXIT rows were already cited); wave 2 opens when wave 1 gates
 next: add freeze write-trigger-eval-set
 
 ## SCOPE
