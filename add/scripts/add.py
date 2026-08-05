@@ -951,7 +951,12 @@ def run(root, cid: str, command: list, cwd=None, timeout: int = RUN_TIMEOUT, jun
     # relevant whether the node cites it or not.
     cited = {c for ids_ in covers(read(node["path"], "T2") if node else {}).values() for c in ids_} \
         if node else set()
-    passed = sorted(i for i, v in ids.items() if v == "pass" and i in cited)
+    # A citation is bare (M5) and an ID is qualified (M1), so membership is resolved through the
+    # ID grammar rather than by `in`. A literal `i in cited` matched nothing once IDs carried
+    # their module, so every receipt recorded an empty `passed:` and every gate refused — the
+    # regression this comment exists to stop being reintroduced.
+    keep = {k for c in cited for k in cite_hits(c, ids)}
+    passed = sorted(i for i, v in ids.items() if v == "pass" and i in keep)
     failed = sorted(i for i, v in ids.items() if v != "pass")
     receipt = {"kind": "test-ids" if ids else "command-exit",
                "ids": f"{sum(v == 'pass' for v in ids.values())}/{len(ids)} reported" if ids else "unknown",
@@ -1090,7 +1095,7 @@ def bind(node: dict, reported: dict) -> tuple:
     """
     proven, unproven = {}, {}
     for rule, checks in covers(node).items():
-        passing = [c for c in checks if reported.get(c) == "pass"]
+        passing = [c for c in checks if resolve_check(c, reported) == "pass"]
         (proven if passing else unproven)[rule] = passing or checks
     return proven, unproven
 
@@ -1102,11 +1107,48 @@ def unbound(node: dict, reported: dict) -> list:
     return sorted(r for r in rules_of(node) if r not in proven or not mapped.get(r))
 
 
+def qualify(where: str, name: str) -> str:
+    """The ONE check-ID grammar: `a.b.c::name` (M1/M3, e16).
+
+    `where` is junit's `classname` or a source path; both normalise to a dotted module so the
+    extractor and the compiler cannot drift into two grammars (R:DRIFT — F1's lesson one level
+    down). A bare name with no `where` stays bare, which is what makes old receipts readable.
+    """
+    where = str(where or "")
+    if where.endswith(".py"):
+        where = where[:-3].replace("\\", "/").replace("/", ".")
+    where = where.strip(".")
+    return f"{where}::{name}" if where else name
+
+
+def resolve_check(cite: str, reported: dict) -> str:
+    """`pass | fail | skip | ambiguous | absent` for one citation (M4/M5, e16).
+
+    An exact hit wins, so a receipt written before the ID shape changed keeps binding and no
+    gated node's citation has to be rewritten (R:SWEEP). Otherwise the citation is matched
+    against the tail of every qualified ID: exactly one hit resolves to its outcome; two or
+    more are AMBIGUOUS and prove nothing, which is the entire point — a name that means two
+    tests cannot entitle a claim about one, and F7's masked failure is exactly that shape.
+    """
+    if cite in reported:
+        return reported[cite]
+    hits = [k for k in reported if k.rpartition("::")[2] == cite]
+    if len(hits) == 1:
+        return reported[hits[0]]
+    return "ambiguous" if hits else "absent"
+
+
 def extract_ids(path) -> dict:
-    """`{check_id: "pass"|"fail"}` from junit-xml. Unreadable output yields `{}`, never a guess.
+    """`{check_id: "pass"|"fail"|"skip"}` from junit-xml. Unreadable output yields `{}`.
 
     junit-xml only at v1.0 (amendment A1). A runner that emits nothing usable leaves the
     receipt at a weaker kind, which A24 requires it to say out loud.
+
+    Keyed by `classname::name`, never by the bare name (M1). The bare key let two same-named
+    tests in different files collide and the last one parsed win, so a FAILING check could be
+    recorded as PASSED — F7, demonstrated on this repo's own `test_sync_is_idempotent`.
+    A `skipped` case records `skip` and never `pass` (M6, R:PHANTOM): the old test asked only
+    for `failure`/`error`, so a test that never ran proved a Must.
     """
     import xml.etree.ElementTree as ET
     try:
@@ -1118,8 +1160,13 @@ def extract_ids(path) -> dict:
         name = case.get("name")
         if not name:
             continue
-        bad = any(case.find(tag) is not None for tag in ("failure", "error"))
-        out[name] = "fail" if bad else "pass"
+        if case.find("skipped") is not None:
+            outcome = "skip"
+        elif any(case.find(tag) is not None for tag in ("failure", "error")):
+            outcome = "fail"
+        else:
+            outcome = "pass"
+        out[qualify(case.get("classname"), name)] = outcome
     return out
 
 
@@ -1533,8 +1580,18 @@ def checks_of(paths) -> dict:
             # fixture that said exactly that, by accident. Prose mentioning the word is not a
             # citation, and the grammar is what tells the two apart.
             rules = [r.strip() for r in (raw or "").split(",") if REFERENT.match(r.strip())]
-            found[name] = (rules, _summarise(desc))
+            # Keyed by `qualify(path, name)` for the same reason `extract_ids` is (M3): the bare
+            # key silently lost one of this repo's own two `test_sync_is_idempotent`, so the
+            # compiler graded 211 tests against a suite of 212. Consumers that show a citation to
+            # a human render the tail — a citation names a TEST, and `covers: test_foo` stays
+            # legible (M5).
+            found[qualify(path, name)] = (rules, _summarise(desc))
     return found
+
+
+def cite_hits(cite: str, known) -> list:
+    """Every qualified ID a bare citation could mean. 0 = absent, 1 = resolved, >1 = ambiguous."""
+    return [k for k in known if k == cite or k.rpartition("::")[2] == cite]
 
 
 def _summarise(text: str, width: int = 110) -> str:
@@ -1548,8 +1605,13 @@ def _summarise(text: str, width: int = 110) -> str:
 
 
 def unlabelled(paths) -> list:
-    """Tests carrying no `covers:` — a visible gap (M3)."""
-    return sorted(name for name, (rules, _) in checks_of(paths).items() if not rules)
+    """Tests carrying no `covers:` — a visible gap (M3).
+
+    Rendered as bare names for the same reason `_checks_lines` is (M5): this list is read by a
+    human and written into a node, and `module::name` there would be the citation sweep e16
+    exists to avoid.
+    """
+    return sorted(name.rpartition("::")[2] for name, (rules, _) in checks_of(paths).items() if not rules)
 
 
 def _checks_lines(node: dict, paths) -> tuple:
@@ -1562,9 +1624,12 @@ def _checks_lines(node: dict, paths) -> tuple:
     """
     rules, extracted = rules_of(node), checks_of(paths)
     relevant = {t: v for t, v in extracted.items() if any(r in rules for r in v[0])}
-    lines = [f"- {t} · covers: {', '.join(rs)} · {desc or 'no description in the test'}"
+    # The TAIL is written, not the qualified id: a citation names a test, and `covers: test_foo`
+    # must stay legible to the human reading the node (M5). The qualified form is the reader's
+    # business — `resolve_check` — never the written claim's.
+    lines = [f"- {t.rpartition('::')[2]} · covers: {', '.join(rs)} · {desc or 'no description in the test'}"
              for t, (rs, desc) in sorted(relevant.items())]
-    return lines, sorted(t for t, (rs, _) in extracted.items() if not rs)
+    return lines, sorted(t.rpartition("::")[2] for t, (rs, _) in extracted.items() if not rs)
 
 
 def checks_verify(root, cid: str, paths, extracted: dict = None) -> list:
@@ -1599,11 +1664,20 @@ def checks_verify(root, cid: str, paths, extracted: dict = None) -> list:
             findings.append({"severity": "error", "rule": rule, "test": None,
                              "message": f"{cid}: `covers: {rule}` names no rule this node declares"})
         for test in cited:
-            if test not in known:
+            # A citation is resolved through the ID grammar, not by set membership: `known` is
+            # keyed `module::name` (M3) while the citation is bare (M5), so a literal `not in`
+            # would report all 394 of this bundle's citations as missing.
+            hits = cite_hits(test, known)
+            if not hits:
                 findings.append({
                     "severity": "error" if gated else "pending", "rule": rule, "test": test,
                     "message": f"{cid}: `{test}` exists in no suite"
                                + ("" if gated else " (node is not gated — its checks are a plan)")})
+            elif len(hits) > 1:
+                findings.append({
+                    "severity": "error" if gated else "pending", "rule": rule, "test": test,
+                    "message": f"{cid}: `{test}` names {len(hits)} tests "
+                               f"({', '.join(sorted(hits))}) — ambiguous, so it proves nothing"})
     return findings
 
 

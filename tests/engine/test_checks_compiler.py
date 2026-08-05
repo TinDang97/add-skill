@@ -22,6 +22,18 @@ sys.path.insert(0, str(REPO / "add" / "scripts"))
 import add  # noqa: E402
 
 
+def _at(found, name):
+    """One entry from `checks_of`, looked up by its bare test name.
+
+    Since e16 `checks_of` keys by `module::name` (M1/M3) so two same-named tests in different
+    files cannot collapse — this repo lost one that way. A citation is still written bare (M5),
+    so a bare lookup resolves through the production grammar rather than by key equality.
+    """
+    hits = add.cite_hits(name, found)
+    assert len(hits) == 1, f"{name!r} resolved to {len(hits)} ids: {hits}"
+    return found[hits[0]]
+
+
 SUITE_DOCSTRING = '''"""A suite carrying covers: in docstrings."""
 
 
@@ -97,8 +109,8 @@ def _suite(bundle):
 def test_checks_extracted_from_docstrings(bundle):
     """covers: M1 — the citation is read from the test, not from the node."""
     found = add.checks_of(_suite(bundle))
-    assert found["test_alpha"][0] == ["M1"]
-    assert found["test_beta"][0] == ["M2", "R:BAD"]
+    assert _at(found, "test_alpha")[0] == ["M1"]
+    assert _at(found, "test_beta")[0] == ["M2", "R:BAD"]
 
 
 def test_checks_extracted_from_comment_headers(bundle):
@@ -107,13 +119,13 @@ def test_checks_extracted_from_comment_headers(bundle):
     A subagent wrote `# --- test_gamma · covers: M3 ---` above the function instead of a
     docstring. One task was enough for the convention to diverge.
     """
-    assert add.checks_of(_suite(bundle))["test_gamma"][0] == ["M3"]
+    assert _at(add.checks_of(_suite(bundle)), "test_gamma")[0] == ["M3"]
 
 
 def test_unlabelled_test_is_reported(bundle):
     """covers: M3, R:GUESS — an unlabelled test is a visible gap, never an inferred label."""
     found = add.checks_of(_suite(bundle))
-    assert found["test_unlabelled"][0] == [], f"a rule was invented for an unlabelled test: {found}"
+    assert _at(found, "test_unlabelled")[0] == [], f"a rule was invented for an unlabelled test: {found}"
     assert "test_unlabelled" in add.unlabelled(_suite(bundle))
 
 
@@ -121,7 +133,7 @@ def test_no_rule_inferred_from_a_name(bundle):
     """covers: M3, R:GUESS — `test_m1_something` must not be read as covering M1."""
     (bundle / "suite" / "test_naming.py").write_text(
         '"""s"""\n\n\ndef test_m1_the_first_rule():\n    """No covers: line at all."""\n')
-    assert add.checks_of(_suite(bundle))["test_m1_the_first_rule"][0] == []
+    assert _at(add.checks_of(_suite(bundle)), "test_m1_the_first_rule")[0] == []
 
 
 # ------------------------------------------------------------------ verify (M2)
@@ -198,8 +210,11 @@ def test_a_test_inside_a_string_literal_is_not_a_test(bundle):
         'FIXTURE = """\n\n\ndef test_not_real():\n    \\"\\"\\"covers: M1 — invented.\\"\\"\\"\n"""\n\n\n'
         'def test_real():\n    """covers: M1 — an actual test."""\n')
     found = add.checks_of([bundle / "suite" / "test_quoted.py"])
-    assert "test_real" in found
-    assert "test_not_real" not in found, \
+    assert add.cite_hits("test_real", found), found
+    # Resolved through the grammar, not by key membership: keys are `module::name` since e16,
+    # so a bare `not in found` is vacuously true and this negative assertion would pass even
+    # if the extractor DID invent the test. Caught on review of e16's own diff.
+    assert not add.cite_hits("test_not_real", found), \
         f"a `def test_` inside a string literal was extracted as a test: {sorted(found)}"
 
 
@@ -332,7 +347,7 @@ def test_a_long_description_is_cut_at_a_word(bundle):
         'def test_long():\n'
         '    """covers: M1 — ' + "supercalifragilistic reasoning " * 6 + '."""\n'
     )
-    desc = add.checks_of([src])["test_long"][1]
+    desc = _at(add.checks_of([src]), "test_long")[1]
     assert desc.endswith("…"), f"a cut description did not say it was cut: {desc!r}"
     assert not desc.rstrip("…").endswith(("supercalifragilisti", "supercalifragilis")), \
         f"cut mid-word: {desc!r}"

@@ -100,7 +100,10 @@ def test_extract_ids_from_junit(tmp_path):
         '<testcase classname="c" name="test_two"><failure message="x"/></testcase>'
         "</testsuite></testsuites>")
     ids = add.extract_ids(xml)
-    assert ids == {"test_one": "pass", "test_two": "fail"}
+    # Keys carry the classname since e16 (M1): the bare key let two same-named tests in
+    # different files collide, and the failing one could be the loser. The outcomes this
+    # check has always asserted are unchanged — only the id shape is.
+    assert ids == {"c::test_one": "pass", "c::test_two": "fail"}
 
 
 def test_extract_ids_missing_file_is_unknown(tmp_path):
