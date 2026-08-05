@@ -1438,6 +1438,31 @@ def gate(root, cid: str, verdict: str, by: str, authority: str = None,
     if receipt is None:
         return refuse("no receipt has been recorded", f"add run {slug} -- <cmd>")
 
+    # Refusal 0 (e17 M1/M2, R:GREENLIE) — the receipt says the run failed.
+    #
+    # F17: every other refusal here reads what the receipt CLAIMS and none read whether the
+    # command survived. A suite can report its checks green while the process exits non-zero
+    # — a collection error, a plugin crash, a coverage threshold, a post-run hook — so `bind`
+    # is satisfied, `unbound` is empty, and the gate passes over a receipt that says FAILED.
+    # Ordered before freshness because a run that failed is the more actionable of the two
+    # facts: re-running fixes staleness anyway, and a stale red receipt reported as merely
+    # stale sends the author to re-run without saying what to fix.
+    # Only PASS is refused (M3, R:TRAP) — a verdict is how a node LEAVES a bad state, and
+    # RISK-ACCEPTED already forces a written reason, which is the honest escape hatch.
+    # Compared as TEXT, deliberately: `run` records an int and the T0 parser reads it back as
+    # `'0'`, so an `exit not in (0, None)` test refuses every gate in the bundle. Caught by the
+    # non-regression half of M1 — the check that a green receipt still passes.
+    code = str(receipt.get("exit", "0")).strip()
+    if verdict == "PASS" and code not in ("0", "", "None"):
+        # `computation:` is a top-level key of the Run node, a sibling of `receipt:` — not a
+        # field inside it. Reading it off the receipt dict silently yields None, which is how a
+        # refusal loses the one detail that makes it actionable (R:MUTE).
+        ran = (read(root / receipt_cid.lstrip("/"), "T0")["fm"] or {}).get("computation")
+        return refuse(f"the receipt records a failed run — `{receipt_cid}` exited {code} "
+                      f"(`{ran or 'command not recorded'}`)",
+                      f"fix the run and re-record it — add run {slug} -- <cmd>, or "
+                      f'add gate {slug} RISK-ACCEPTED --reason "<why a failed run is acceptable>"')
+
     # Refusal 1 (M1) — a verdict over changed code is evidence of nothing.
     #
     # A node declaring no `scope:` has nothing to be stale ABOUT, and §3d's quick and doc lanes

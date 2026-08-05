@@ -2,7 +2,7 @@
 type: Task
 title: a gate cannot pass over a receipt whose command failed
 goal: a receipt that records a failed run cannot entitle a PASS, in any lane
-status: direction
+status: done
 depth: standard
 kind: fix
 sensitivity: security
@@ -21,13 +21,17 @@ gives:
   - "a non-PASS verdict may still be recorded over a red receipt — refusing that would trap the node"
 budget: 25 lines wc -l of growth (A3)
 generated: { by: add/3.0.0, at: 2026-07-30 }
-verified: []
+verified:
+  - { by: "claude/opus-5", at: 2026-08-05, act: freeze, authority: human }
+  - { by: "process:run", at: 2026-08-05, act: run, authority: process, outcome: FAIL, receipt: /tasks/refuse-red-command.d/runs/1.md }
+  - { by: "process:run", at: 2026-08-05, act: run, authority: process, outcome: PASS, receipt: /tasks/refuse-red-command.d/runs/2.md }
+  - { by: "human:tindang", at: 2026-08-05, act: gate, authority: human, outcome: PASS, receipt: /tasks/refuse-red-command.d/runs/2.md, brief: "sha256:7d12ec34bc67f6a9" }
 ---
 ## CARD
 goal: a receipt that records a failed run cannot entitle a PASS, in any lane
 gives: a sixth refusal in `gate`, keyed on the receipt's own `exit` field
 scope: add/scripts/add.py · tests/engine/test_red_command.py
-beat: direction · next: add freeze refuse-red-command
+beat: done · next: add gate refuse-red-command
 
 ## RULES
 <must>
@@ -77,12 +81,47 @@ least-sure: the ⚠ above — whether a blanket refusal on non-zero is right, or
   anything. Deciding it on zero counter-examples is what the ⚠ exists to flag.
 
 ## CHECKS
-- <compiled at BUILD — see F11 before running `checks --sync` against the whole suite>
-red-first: every check MUST fail first.
+- test_green_ids_cannot_mask_a_red_command · covers: M4, R:GREENLIE · F17's exact shape — every cited ID passes, the command does not. This is why the defect survived: `bind` is…
+- test_green_receipt_still_passes · covers: M1 · the refusal must not fire on a healthy run — the non-regression half. A refusal that fires wrongly is more…
+- test_hard_stop_survives_a_red_receipt · covers: M3, R:TRAP · HARD-STOP is the honest verdict over a failed run and must be recordable
+- test_pass_refused_over_a_red_receipt · covers: M1, R:GREENLIE · a PASS cannot be recorded while the receipt says the run failed
+- test_risk_accepted_survives_a_red_receipt · covers: M3, R:TRAP · a verdict is how a node LEAVES a bad state; refusing all of them traps it
+- test_the_refusal_names_the_command · covers: M2, R:MUTE · naming the command is what makes the fix the run, not the verdict
+- test_the_refusal_names_the_exit_code · covers: M2, R:MUTE · `gate`'s contract is that a refusal says what would make it pass. Asserts the refusal FIRST and the digit in…
+- test_the_refusal_precedes_freshness · covers: M1 · a receipt that is BOTH red and stale reports red, the more actionable fact
+red-first: every check above MUST fail for the right reason before BUILD.
+<!-- COMPILED from the suite (e14). Do not author here: a citation edited by hand
+     cannot be distinguished from one that was never true (F2). -->
 
 ## EVIDENCE
-receipt: <runs/<n>.md>
-gate: <PASS | RISK-ACCEPTED | HARD-STOP>
+receipt: runs/2.md — 230/230 test-ids, exit 0, freshness content. Red record is runs/1.md
+  (`3/8 reported`, exit 1, 5 failed).
+gate: PASS — human:tindang, 2026-08-05, recorded by `add gate` at authority `human` (A17).
+  Receipt `runs/2.md`, brief `sha256:7d12ec34bc67f6a9` — which is F16 again: `gate` recomputes
+  the brief with default arguments, so this hash names an artifact no agent was handed. Noted
+  a second time because a defect that is recorded but keeps happening is not yet fixed.
+budget: **1896 → 1921 = 25 lines against 25 allocated — exactly on budget**, the first task in
+  this milestone that did not overrun. Cheap because the PLAN was right about the shape: F17's
+  cost was never complexity, it was that nobody read the field. The A3 invariant is unchanged
+  by this task at **2511/2400** — the 25 were already booked by A6.
+scope-check: no file edited outside `scope:`. e16's excursion is not repeated.
+red-first: 5 of 8 failed for the right reason — `gate` RECORDED a PASS where it had to refuse,
+  which is F17 itself rather than a missing name. **3 could not fail and are not claimed as red**:
+  `test_green_receipt_still_passes` and the two R:TRAP guards assert behaviour that was already
+  correct and must STAY correct after a new refusal lands. A refusal's non-regression half cannot
+  be red without the refusal being wrong.
+found-while-building: two defects in the first draft of this fix, both caught by the suite before
+  any receipt was taken. (1) `exit` round-trips through the T0 parser as the STRING `'0'`, so
+  `code not in (0, None)` refused all 222 existing gates — caught by the one check that exists to
+  catch exactly that, `test_green_receipt_still_passes`. This is the case for writing the
+  non-regression half of a refusal before the refusal. (2) `computation:` is a top-level key of
+  the Run node, not a field inside `receipt:`, so the first draft's refusal named
+  `command not recorded` every time — R:MUTE, committed by the very task that forbids it, and
+  caught by `test_the_refusal_names_the_command`.
+also-found: a weak assertion in my own red suite. `assert "3" in note` PASSED against the
+  un-fixed engine, because a brief hash contains digits — the check would have been satisfied by
+  a hex digest. Strengthened to assert the refusal fires first, then the digit in a phrase. Same
+  class as F18, found the same way: reading the diff rather than the result.
 
 ## LESSONS
 - <lesson> -> add learn <lens>
