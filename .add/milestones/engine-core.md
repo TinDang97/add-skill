@@ -2,8 +2,9 @@
 type: Milestone
 title: Engine core
 goal: >-
-  all ten verbs are green under red/green TDD, in ≤2,400 lines of Python stdlib shipped
-  inside the skill directory, and this repo's own `.add/` runs on them
+  all ten verbs are green under red/green TDD, in ≤1,550 CODE lines of Python stdlib
+  (D-15 — the unit and the ceiling both moved, see A7) shipped inside the skill
+  directory, and this repo's own `.add/` runs on them
 status: active
 stage: mvp
 depth: deep
@@ -30,6 +31,7 @@ tasks:
   - /tasks/bind-quick-lane.md
   - /tasks/define-product-exit.md
   - /tasks/refuse-red-command.md
+  - /tasks/cut-status-flags.md
 depends_on:
   - /milestones/format-standard.md
 generated: { by: claude/opus-5, at: 2026-07-29 }
@@ -41,16 +43,18 @@ amended:
   - { by: "human:tindang", at: 2026-07-30, authority: human, reason: "A4 — three tasks added from an audit of hand-work across waves 2 and 3: gate (never existed, though D-2 counts it in the ten and all 11 gates were hand-appended through a private function), CHECKS compiled from the suite (F2s defect class made structurally impossible), and F1s covers grammar. 260 lines allocated; invariant 1956/2400, slack 444. See ## AMENDMENTS" }
   - { by: "human:tindang", at: 2026-07-30, authority: human, reason: "A5 — PROPOSAL v5. Five tasks added from a promise audit (x1 profiles, x2 prompt templates, x3 status surface, x6 quick-lane binding, x5 product EXIT); e11 re-budgeted 80 -> 200 because no CLI entry point exists at all. The A3 invariant BREACHES at 2472/2400 and the D-12 cut is owed at e11s freeze. See ## AMENDMENTS" }
   - { by: "human:tindang", at: 2026-07-30, authority: human, reason: "A6 — one task added from an engine audit taken at e16: refuse-red-command closes F17, where gate records PASS over a receipt whose command exited non-zero. Five further findings recorded WITHOUT owners (F11 checks --sync fabricates citations, F13 append_item splices wrapped stamps, F14 fresh is blind to files added under a glob, F15 A17s floor is escaped by a broader scope, F16 the brief stamp names a brief never issued, F18 a scope excursion turned an assertion vacuous — fixed at once, class unowned) — assigning them before the D-12 cut would book work against a projection. 25 lines allocated. See ## AMENDMENTS" }
+  - { by: "human:tindang", at: 2026-08-05, authority: human, reason: "A7 — D-12 fired in full after e11 was MEASURED (cut-status-flags withdrew --find/--graph/--since, -56 lines). It still did not fit at 2463/2400, so D-15 restates the ceiling in CODE lines and RAISES it to 1550: a faithful conversion is 1440 and the projection is 1485, so the conversion alone creates no room. D-6 is BROKEN knowingly rather than dressed up as a unit change. Projected 1485/1550, slack 65. All allocations rewritten in the new unit IN THE NODES (F20). See ## AMENDMENTS" }
 verified: []
 ---
 ## CARD
-goal: ten verbs, ≤2,400 lines, stdlib only, shipped inside the skill — and dogfooded here
+goal: ten verbs, ≤1,550 CODE lines (D-15), stdlib only, shipped inside the skill — and dogfooded here
 shape: five waves; each wave's line budget is asserted in CI so overflow shows at wave one
-state: ten verbs gated as FUNCTIONS · 14 of 22 · **no CLI exists** · e16 and e17 gated PASS
-  (human), F7/F12/F17 closed · 0 info 0 error · 230 checks · engine 1921/2400 ·
-  **projected 2511/2400 — 111 OVER, D-12 cut owed at e11 (A5, A6)**
-next: the D-12 cut, or `ship-domain-profiles` — but see F19: the engine writes only two of the
-  three beats, so every brief compiled during BUILD is a direction brief
+state: ten verbs gated as FUNCTIONS · 15 of 23 · **no CLI exists, but it is now MEASURED**
+  (208 wc -l / 138 code) · e16/e17/e18 gated PASS (human) · F7/F12/F17 closed · 0 info 0 error ·
+  236 checks · engine **1865 wc -l / 1114 code** · **D-12 fired, D-15 re-units the ceiling:
+  projected 1485/1550 CODE, slack 65 (A7)**
+next: `build-durability` — its CI job is the only thing that stops the invariant being
+  hand-maintained in three places, which is how F20 hid a 120-line disagreement
 
 ## SCOPE
 In:  `add/scripts/add.py` (the engine) · its templates, profiles and method personas ·
@@ -365,6 +369,36 @@ findings:
     reason it is not folded into e17 is that e17's PLAN said "the smallest possible change to
     one function" and a lifecycle fix is a second contract — F11's lesson about answering a
     format question inside an engine task
+  - **F20 · the invariant that forces D-12 has two values, and they disagree by 120 lines —
+    found 2026-08-05, taking the cut.** A5's amendment stamp re-budgeted `e11` from 80 to 200
+    ("no CLI entry point exists at all"). **`package-in-skill.md`'s frontmatter still reads
+    `budget: 80 lines`.** So the A3 invariant depends on which artifact you read:
+    ```
+    summing the task nodes   1921 + 470 = 2391   UNDER by 9
+    summing with A5's 200    1921 + 590 = 2511   OVER  by 111
+    ```
+    Every statement of "111 over" in this bundle — the CARD, PROJECT.md, A6, the PR — traces to
+    the second. The node a builder would actually read says the opposite. This is L5 (one
+    artifact, one version) breached in the one number the milestone's central decision turns on,
+    and it went unnoticed because an amendment stamp is prose that nothing recomputes against
+    the nodes it re-budgets.
+    **Two things follow.** The engine has no verb that sums allocations, so the invariant has
+    been maintained by hand in three places since A1 — which is F10's shape (a compiled artifact
+    that is hand-maintained) applied to a number rather than a file. And D-12 was nearly fired
+    on the larger of two figures without anyone checking they matched.
+    **Not repaired by editing `package-in-skill.md` to say 200.** That would pick a winner by
+    typing, and the point of the measurement now underway is that 200 was never measured either.
+    The number is settled by `e11`'s spike, and both places are written once from the result
+  - **F21 · A3's estimate for the three status flags was wrong by 5–7× — measured 2026-08-05.**
+    A3 restored `--locate`, `--graph` and `status --since` into e6 at **"~247 lines"**. Measured
+    in the shipped engine: `locate` 6, `graph_lines` 22, `since` 8 — **36 lines of function**,
+    ~46 with the branches in `status()`. The restoration that A3 treated as spending most of a
+    301-line margin actually spent about a sixth of it.
+    Recorded not as a historical curiosity but as the calibration input for every remaining
+    allocation: these are the same estimates, made the same way, that put `e11`'s CLI at 200 and
+    D-12's cut order at "enough". The cut order buys ~63 against a 111-line gap, so **D-12 as
+    written cannot close it even if fired completely** — which nobody could see until the pieces
+    were measured rather than summed
 risks:
   - ~~**A22 is specified, not implemented.**~~ **RETIRED at e7, 2026-07-30.** `scope_digest`
     hashes git blobs over `scope:`; the M0 kill-test was run in reverse — `git worktree add`
@@ -622,6 +656,61 @@ that the cut is not a judgement call: something in the remaining allocation does
 
 **What this amendment does not claim.** Six defects found in one audit of six functions is not a
 sign the audit was thorough — it is a sign the ratio is unknown. No other function was read.
+
+### A7 · 2026-08-05 · D-12 fires, and D-6 is broken on purpose (human:tindang)
+
+**What happened, in order.** The invariant read 2511/2400 and D-12's cut was owed. Rather than
+fire a pre-booked cut on a pre-booked estimate, `e11`'s CLI was WRITTEN and measured first — a
+working spike over all ten verbs with `--dry-run`, `--json`, exit codes and refusal handling. It
+came to **208 wc -l / 138 code**, which put E-2's "realistic 150–250" at the top of its range and
+refuted the hope that a measured `e11` would close the gap on its own.
+
+Then D-12 was fired in full (`e18 cut-status-flags`): `--find`, `--graph` and `status --since`
+withdrawn, **−56 lines measured against ~46 predicted**. Three UX surfaces gone, in a project
+whose named weakness #5 is UX. It was paid first precisely so that what follows could not be
+called a way of avoiding it.
+
+**It still did not fit.** 1865 consumed + 390 remaining + 208 CLI = **2463 / 2400.**
+
+**D-15 — the ceiling is restated in CODE lines, and RAISED.** Two changes, and the second is a
+raise, recorded as one rather than hidden inside the first:
+
+1. **Unit: `wc -l` → code lines.** Under `wc -l` a comment competes with a feature for the same
+   budget. In THIS file that is perverse: 40% of it is comment and docstring, and that prose is
+   where the findings live — F1 through F21 are readable because someone spent lines explaining
+   rather than shipping. A ceiling that taxes explanation in an engine whose whole thesis is
+   auditable evidence is measuring the wrong thing.
+2. **Ceiling: 1,550 code lines.** A faithful conversion of 2,400 wc -l at the measured 60% ratio
+   is **1,440 code**, and the projection is 1,485 — still 45 over. So the conversion alone does
+   not create room and it would be dishonest to imply it did. 1,550 is **an ~8% raise**, and
+   D-6 said the budget "rose to 2,400 once and never again". **D-6 is broken here, knowingly.**
+
+| | code lines |
+|---|---:|
+| engine, after the cut | 1,114 |
+| CLI, measured | 138 |
+| remaining allocations, converted | 233 |
+| **projected** | **1,485** |
+| ceiling (D-15) | 1,550 |
+| slack | **65** |
+
+**Why a raise rather than a fourth cut.** The two remaining cuttable things were
+`build-hints-layer` — a `first-light` EXIT criterion and the direct fix for weakness #5 — and
+`build-durability`, which **gives the CI job that asserts this very invariant**. Cutting the
+check on the number in order to fit the number is circular, and it is the reason F20 survived:
+the invariant has been maintained by hand in three places since A1, and two of them disagreed by
+120 lines without anyone noticing. The alternative was cutting A5's product tasks, which would
+have spent a fourth budget cycle on substrate — finding 0d, chosen deliberately.
+
+**What this costs, stated plainly.** The engine's line budget is no longer a fixed promise; it
+has now moved once under D-6 and once under D-15, and a reader is entitled to treat the next
+overflow as likely to move it again. The defence against that is not this paragraph — it is
+`build-durability`'s CI job, which must land before any further allocation is booked, so the
+number is asserted by machine rather than maintained by three hand-edited copies.
+
+**Every allocation is rewritten in the new unit, in the nodes themselves.** Not in this stamp:
+F20's finding is that a number living in an amendment while the nodes say otherwise is how the
+invariant drifted in the first place.
 
 ## STRATEGY
 approach: dependency-first — nothing can be built before the thing that reads and writes a

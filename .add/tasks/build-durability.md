@@ -15,16 +15,16 @@ depends_on:
 needs:
   - /tasks/build-doctor.md#gives
 gives:
-  - "the CI job asserting the A3 invariant: consumed + remaining allocations <= 2,400"
+  - "the CI job asserting the A3 invariant: consumed + remaining allocations <= 1,550 CODE lines (D-15)"
   - "concurrency and crash tests over the atomic write path"
   - "the fresh-checkout test: `python3 add/scripts/add.py` with zero install"
-budget: 80 lines wc -l of growth (amendment A1/A3)
+budget: 48 CODE lines of growth (D-15 — converted from 80 wc -l at the engine's measured 60% code ratio; the unit changed, this allocation did not)
 generated: { by: add/3.0.0, at: 2026-07-29 }
 verified: []
 ---
 ## CARD
 goal: the engine's own invariants are asserted by machine, on every change
-gives: the CI job asserting the A3 invariant: consumed + remaining allocations <= 2,400 · concurrency and crash tests over the atomic write path · the fresh-checkout test: `python3 add/scripts/add.py` with zero install
+gives: the CI job asserting the A3 invariant: consumed + remaining allocations <= 1,550 CODE lines (D-15) · concurrency and crash tests over the atomic write path · the fresh-checkout test: `python3 add/scripts/add.py` with zero install
 scope: add/scripts/add.py · its red suite
 beat: direction · next: add freeze build-durability
 

@@ -19,7 +19,7 @@ needs:
 gives:
   - "hint(graph, after_verb) -> the next: line, derived from graph state"
   - "a test asserting EVERY verb's output ends in one (law 4, mechanically)"
-budget: 80 lines wc -l of growth (amendment A1/A3)
+budget: 48 CODE lines of growth (D-15 — converted from 80 wc -l at the engine's measured 60% code ratio; the unit changed, this allocation did not)
 generated: { by: add/3.0.0, at: 2026-07-29 }
 verified: []
 ---

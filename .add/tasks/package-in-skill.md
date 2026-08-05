@@ -20,7 +20,7 @@ gives:
   - "the skill directory layout with the engine at scripts/add.py"
   - "the CLI entry point: argument parsing over the ten verbs"
   - "this repo's `.add/` driven by the engine — the M1 EXIT criterion"
-budget: 80 lines wc -l of growth (amendment A1/A3)
+budget: 138 CODE lines of growth (D-15) — MEASURED, not estimated. A working CLI spike covering all ten verbs, --dry-run, --json and exit codes came to 208 wc -l / 138 code. Supersedes both the 80 in this frontmatter and the 200 in A5, which disagreed by 120 lines and never met (F20)
 generated: { by: add/3.0.0, at: 2026-07-29 }
 verified: []
 ---

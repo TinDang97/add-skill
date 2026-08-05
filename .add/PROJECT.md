@@ -14,12 +14,13 @@ goal: lean, trustworthy AI-driven development — ADD 3.0 on the ABF-1 file grap
 shape: honest evidence → a reachable engine → the walking skeleton → **a decision gate** → the
   method → proof → ship. PROPOSAL v5 reordered this: the two results that could kill the project
   now arrive in nine tasks instead of twenty-eight
-state: M0 done · M1 13 of 22, ten verbs gated as FUNCTIONS but **no CLI exists** · M1.5 `first-light`
-  and M2 `skill-surface` opened · e16 gated PASS: evidence IDs now name one test each, so a failing
-  or skipped check can no longer be recorded as passed · **six further trust-path defects found by
-  audit (A6)**, one owned, five OWED · line invariant **2511/2400, 111 over — D-12 cut owed at e11**
-next: M1 `refuse-red-command` (F17) — a PASS can still be recorded over a receipt whose command
-  exited non-zero, which is the last way a false green reaches the record
+state: M0 done · M1 15 of 23 · the CLI is **measured** (208 wc -l / 138 code) but still unbuilt ·
+  M1.5 `first-light` and M2 `skill-surface` opened · e16/e17/e18 gated PASS · **D-12 fired** —
+  `--find`/`--graph`/`--since` withdrawn, −56 lines — and it still did not fit, so **D-15 restates
+  the ceiling in CODE lines and raises it to 1,550, breaking D-6 knowingly (A7)** ·
+  projected **1485/1550 code, slack 65** · 21 findings recorded, 8 unowned
+next: M1 `build-durability` — its CI job is the only thing that stops this invariant being
+  maintained by hand in three places, which is how F20 hid a 120-line disagreement
 
 ## Direction
 Distil AIDD-Book 2.5 — which scored a best-in-class 0.97 fidelity floor across six
@@ -43,7 +44,8 @@ delivery, never in private. A claim without evidence is written as a claim.
 No ceremony that does not earn its tokens.
 
 ## Constraints
-- Python stdlib only, single package, engine ≤ 2,400 lines, shipped inside the skill directory
+- Python stdlib only, single package, engine ≤ **1,550 CODE lines** (D-15, was 2,400 wc -l;
+  the unit changed AND the number rose — see engine-core A7), shipped inside the skill directory
 - clean break from 2.5 — no migration verb ships in v1
 - red/green TDD on every engine verb
 - the bundle holds knowledge; the engine lives in the installed package

@@ -15,7 +15,7 @@ depends_on:
   - /tasks/build-brief-compiler.md
 needs:
   - /tasks/build-brief-compiler.md#gives
-budget: 40 lines wc -l of growth (A5)
+budget: 24 CODE lines of growth (D-15 — converted from 40 wc -l at the engine's measured 60% code ratio; the unit changed, this allocation did not)
 generated: { by: add/3.0.0, at: 2026-07-30 }
 verified: []
 ---

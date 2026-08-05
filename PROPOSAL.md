@@ -38,7 +38,7 @@ execution behind it, and the first to audit the benchmark it argues from.
 |---|---|
 | `python3 -m pytest tests/ -q` | **212 passed** in 7.8s |
 | `python3 scripts/validate_bundle.py .add` | **62 nodes · 171 edges · 0 info · 0 error · CONFORMS** |
-| `wc -l add/scripts/add.py` | **1,822 / 2,400** |
+| `wc -l add/scripts/add.py` | **1,865** — the governing figure is now **1,114 / 1,550 code** (D-15) |
 | M0 `format-standard` | **done** — 10/10 gated, closed with a census |
 | M1 `engine-core` | **active** — 12 of 16 done; all ten verbs gated |
 | M1 remaining | `e9 hints` · `e10 durability` · `e11 package-in-skill` · `e16 repair-evidence-ids` |
@@ -370,8 +370,10 @@ means proven-with-a-wrapper. That is precisely what `v0` measures.
 <skill>/scripts/add.py <verb>`, `--dry-run` on every write verb, `--json`, `--help`, exit codes.
 Re-budgeted from 80 to **200 lines** (E-2) — which breaks the A3 invariant and forces **D-12**.
 
-**Budget:** ≤ **2,400** lines, stdlib only, single file. D-6 stands: the ceiling has never moved
-and does not move now. **A verb goes instead — see D-12.**
+**Budget:** ≤ **1,550 CODE lines**, stdlib only, single file (**D-15**). This paragraph previously
+read *"D-6 stands: the ceiling has never moved and does not move now. A verb goes instead."* Both
+halves happened: three verbs' flags went (D-12, `e18`, −56 lines) **and** the ceiling moved anyway,
+because the cut bought 56 against a 146-line gap. The measured CLI is 208 wc -l / 138 code.
 
 ### 4c · Packaging and the identity contract
 
@@ -381,7 +383,7 @@ add/
   references/                 # 7 files, ≤1,000 lines total, on demand
     intake · loop · token · resume-learn · personas · runtime · team
   scripts/
-    add.py                    # ≤2,400 lines, stdlib only, WITH a CLI entry point
+    add.py                    # ≤1,550 CODE lines (D-15), stdlib only, WITH a CLI entry point
     templates/                # task · milestone · spec · project · prompts/*.xml
     profiles/                 # 6 domain profiles — as data, not engine branches
     personas/                 # the 3 method personas
@@ -539,7 +541,7 @@ elaborating a loop whose core is `s1`), and all of M3 (personas and prompts are 
 | id | slug | goal (end-state) |
 |---|---|---|
 | **M0** | `format-standard` | **done** — ABF-1 + A1–A24 ratified, every external standard claim checked against its source, a worked example that validates by existing |
-| **M1** | `engine-core` | ten verbs green under red/green TDD, ≤2,400 lines, **reachable from a CLI**, shipped inside the skill directory, and this repo's `.add/` driven by it |
+| **M1** | `engine-core` | ten verbs green under red/green TDD, ≤1,550 code lines (D-15), **reachable from a CLI**, shipped inside the skill directory, and this repo's `.add/` driven by it |
 | **M1.5** | **`first-light`** | **NEW.** A cold agent, given the skill directory alone, runs `init → quick lane → one standard task → gate` end to end. The walking skeleton, and the input to the decision gate |
 | **M2** | `skill-surface` | the full judgment layer inside its ≤1,200-line budget: intake, loop, token, resume, runtime, personas, **team** |
 | **M3** | `personas-prompts` | three method personas + the XML prompt library **loaded by `brief`** + the persona-author flow, schema-validated |
@@ -806,7 +808,7 @@ improve.** That last clause is new and it is B4's fix.
 ### Of record (carried, confirmed)
 
 D-1 skill-bundled engine + optional pipx shim · D-2 10 verbs + flags · D-3 v1.0 = M0–M4 + `d1` ·
-D-4 persona corpus by path · D-6 the engine budget rose to 2,400 once and never again · D-7 skill
+D-4 persona corpus by path · ~~D-6 the engine budget rose to 2,400 once and never again~~ **SUPERSEDED by D-15, 2026-08-05 — it rose a second time, and the unit changed with it** · D-7 skill
 identity and coexistence · D-8 `log.md` is compiled · D-9 trigger precision is a gate · D-10 M4
 carries a budget and a pre-registered task set.
 
@@ -818,6 +820,7 @@ carries a budget and a pre-registered task set.
 | **D-12** | **`e11`'s CLI is budgeted at 200 lines, and the overflow cut is pre-booked** | if consumed + remaining > 2,400 at any gate, the cut order is `--locate` → `--graph` → `status --since`, then a **verb** (`learn`, folded into `doctor --learn`). Never a law, never the ceiling | D-6 holds. The decision is taken now, with the number in hand, instead of at the moment of overflow |
 | **D-13** | **The plan is reordered to reach a decision gate in nine tasks** | Stages A–D before M3 and before `e10`; Stage D's three verdicts pre-committed | the two assumptions every downstream number inherits get tested before we buy more of them |
 | **D-14** | **Nothing ships a cost claim until `v8` runs** | the 2.5 arm is gate-0 of M4, ~$10 | B4: the project's entire purpose is "fix 2.5's weaknesses" and no eval compared it to 2.5. A claim measured only against spec-kit is a claim about spec-kit |
+| **D-15** | **The engine ceiling is restated in CODE lines and RAISED to 1,550 — D-6 is broken knowingly** | after `e11` was measured (208 wc -l / 138 code) and D-12 fired in full (−56 lines, three UX surfaces withdrawn), the projection was still 2,463/2,400. Two changes, both stated: the unit moves to code lines because `wc -l` makes a comment compete with a feature in a file that is 40% findings; and the ceiling becomes **1,550 code**, which is an ~8% raise over the faithful conversion of 1,440. Projected 1,485/1,550 | D-6 said the budget rose once and never again; it has now risen twice. The defence is not this row but `build-durability`'s CI job, which must land before another allocation is booked — F20 showed the invariant hand-maintained in three places with two of them 120 lines apart |
 
 ---
 

@@ -15,7 +15,7 @@ depends_on:
   - /tasks/build-doctor.md
 needs:
   - /tasks/build-doctor.md#gives
-budget: 30 lines wc -l of growth (A5)
+budget: 18 CODE lines of growth (D-15 — converted from 30 wc -l at the engine's measured 60% code ratio; the unit changed, this allocation did not)
 generated: { by: add/3.0.0, at: 2026-07-30 }
 verified: []
 ---
