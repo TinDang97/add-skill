@@ -13,6 +13,7 @@ depends_on:
   - /tasks/write-trigger-eval-set.md
 generated: { by: add/3.0.0, at: 2026-08-05 }
 verified: []
+sensitivity: data
 ---
 ## CARD
 goal: precision AND recall >=0.9 on the query set, both S5 arms — the skill fires in-regime, stays silent off it

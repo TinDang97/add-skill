@@ -31,9 +31,10 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 
 ## Milestones
 
-- [Engine core](milestones/engine-core.md) — `active` — ten verbs, ≤2,400 lines, dogfooded here
+- [Engine core](milestones/engine-core.md) — `active` — ten verbs, ≤1,550 code lines (D-15), dogfooded here
 - [First light](milestones/first-light.md) — `direction`
 - [Format standard](milestones/format-standard.md) — `done` — ABF-1 + A1–A24, proven by a bundle that validates
+- [Prove it](milestones/prove-it.md) — `direction`
 - [Skill surface](milestones/skill-surface.md) — `direction`
 
 ## Tasks
@@ -51,8 +52,10 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 - [status — orientation, and the three flags A3 restored](tasks/build-orient.md) — `done` · `standard` · `architecture`
 - [run · learn — receipts, and the content-addressed freshness A22 owes](tasks/build-receipts-learn.md) — `done` · `standard` · `security`
 - [Build the worked example and validator](tasks/build-worked-example.md) — `done` · `standard` · `mechanical`
+- [v8 — the 2.5-arm census, gate-0](tasks/census-2-5-arm.md) — `direction` · `standard` · `data`
 - [CHECKS compiled from the suite, not authored beside it](tasks/compile-checks-from-suite.md) — `done` · `standard` · `architecture`
 - [Compile the graph — typed edges, the fragment resolver, derived activity](tasks/compile-graph.md) — `done` · `standard` · `architecture`
+- [D-12 fires — three status flags are withdrawn, not erased](tasks/cut-status-flags.md) — `done` · `standard` · `security`
 - [Define authority and evidence rules](tasks/define-authority-rules.md) — `done` · `standard` · `security`
 - [Define the evolution contract, the amendment protocol, and the trust boundary](tasks/define-compat-contract.md) — `done` · `standard` · `architecture`
 - [Define the entity model and slug rules](tasks/define-entity-model.md) — `done` · `standard` · `architecture`
@@ -62,11 +65,14 @@ generated: { by: claude/opus-5, at: 2026-07-29 }
 - [Define the read protocol and brief grammar](tasks/define-read-protocol.md) — `done` · `standard` · `architecture`
 - [Define scale rules for a long-running bundle](tasks/define-scale-rules.md) — `done` · `quick` · `mechanical`
 - [Define the task node schema](tasks/define-task-schema.md) — `done` · `standard` · `architecture`
+- [v7 — trigger precision, two arms](tasks/eval-trigger-precision.md) — `direction` · `standard` · `data`
+- [v0 — unwrapped drive, two arms](tasks/eval-unwrapped-drive.md) — `direction` · `deep` · `architecture`
 - [brief compiles from a template file, not from code](tasks/load-prompt-templates.md) — `direction` · `standard` · `architecture`
 - [package the engine inside the skill directory](tasks/package-in-skill.md) — `direction` · `standard` · `architecture`
 - [Port OKF node I/O — read tiers and surgical writes](tasks/port-okf-parse.md) — `done` · `standard` · `architecture`
 - [a cold agent drives the loop from the skill directory alone](tasks/prove-first-light.md) — `direction` · `deep` · `architecture`
-- [test IDs carry their file — a failing check cannot be recorded as passed](tasks/repair-evidence-ids.md) — `direction` · `standard` · `security`
+- [a gate cannot pass over a receipt whose command failed](tasks/refuse-red-command.md) — `done` · `standard` · `security`
+- [test IDs carry their file — a failing check cannot be recorded as passed](tasks/repair-evidence-ids.md) — `done` · `standard` · `security`
 - [status is the product, not a node listing](tasks/repair-status-surface.md) — `direction` · `standard` · `architecture`
 - [reconcile the covers: grammar — FORMAT §6.1 vs the validator](tasks/resolve-covers-grammar.md) — `done` · `standard` · `security`
 - [six profiles as data, and a lens set that is really closed](tasks/ship-domain-profiles.md) — `direction` · `standard` · `architecture`
